@@ -6,7 +6,7 @@ locals {
     "arn:aws:ecr:us-east-1:${data.aws_caller_identity.current.account_id}:repository/web/profile"
   ]
   ecs_service_images = {
-    web = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/web/profile:85cef94d13156f403abd51ec0ca367dbd9be5c5d"
+    web = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/web/profile:34cdc7bf062150e4b25d9330ce5dcde8ea1529e1"
   }
 }
 
