@@ -17,7 +17,7 @@ jobs:
   deploy:
     name: Terraform Apply
     runs-on: ubuntu-latest
-    environment: development
+    environment: production
 
     steps:
       - name: Checkout code
@@ -49,21 +49,14 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: |
-          terraform plan -out=tfplan -no-color 2>&1 | \
-            sed -E 's/[0-9]{12}/[REDACTED]/g' | \
-            sed -E 's/arn:aws:[^:]*:[^:]*:[^:]*:[^[:space:]]+/arn:aws:[REDACTED]/g'
-        continue-on-error: true
+        run: terraform plan -out=tfplan -no-color 2>&1
 
       - name: Terraform Plan Status
         if: steps.plan.outcome == 'failure'
         run: exit 1
 
       - name: Terraform Apply
-        run: |
-          terraform apply -auto-approve tfplan 2>&1 | \
-            sed -E 's/[0-9]{12}/[REDACTED]/g' | \
-            sed -E 's/arn:aws:[^:]*:[^:]*:[^:]*:[^[:space:]]+/arn:aws:[REDACTED]/g'
+        run: terraform apply -auto-approve tfplan
 
       - name: Terraform Output
         if: success()
