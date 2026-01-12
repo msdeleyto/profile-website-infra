@@ -50,6 +50,7 @@ The script will:
 
 | File | Purpose |
 |------|---------|
+| `asg.json` | EC2 Launch Templates and Auto Scaling Groups |
 | `acm.json` | ACM certificate management (request, validate, delete) |
 | `alb.json` | Application Load Balancer, target groups, listeners |
 | `ecs.json` | ECS clusters, task definitions, services, CloudWatch logs |

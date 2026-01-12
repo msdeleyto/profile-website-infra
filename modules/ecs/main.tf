@@ -127,6 +127,7 @@ resource "aws_autoscaling_group" "this" {
   max_size            = var.ecs_asg_max
   min_size            = var.ecs_asg_min
   vpc_zone_identifier = var.subnet_ids
+  protect_from_scale_in = true
 
   launch_template {
     id      = aws_launch_template.this.id

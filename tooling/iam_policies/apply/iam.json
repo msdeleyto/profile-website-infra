@@ -2,15 +2,24 @@
   "Version": "2012-10-17",
   "Statement": [
     {
+      "Sid": "IAMRoleReadOnly",
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetRole",
+        "iam:ListRolePolicies",
+        "iam:ListAttachedRolePolicies",
+        "iam:ListInstanceProfilesForRole",
+        "iam:ListRoles",
+        "iam:ListInstanceProfiles"
+      ],
+      "Resource": "*"
+    },
+    {
       "Sid": "IAMRoleManagement",
       "Effect": "Allow",
       "Action": [
         "iam:CreateRole",
         "iam:DeleteRole",
-        "iam:GetRole",
-        "iam:ListRolePolicies",
-        "iam:ListAttachedRolePolicies",
-        "iam:ListInstanceProfilesForRole",
         "iam:TagRole",
         "iam:UntagRole",
         "iam:UpdateRole",
@@ -66,6 +75,23 @@
         "arn:aws:iam::*:role/*-ecs-task",
         "arn:aws:iam::*:role/*-ecs-instance"
       ]
+    },
+    {
+      "Sid": "ServiceLinkedRoleManagement",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateServiceLinkedRole"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringLike": {
+          "iam:AWSServiceName": [
+            "autoscaling.amazonaws.com",
+            "ecs.amazonaws.com",
+            "elasticloadbalancing.amazonaws.com"
+          ]
+        }
+      }
     }
   ]
 }

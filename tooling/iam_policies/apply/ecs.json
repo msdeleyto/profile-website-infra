@@ -11,9 +11,21 @@
         "ecs:TagResource",
         "ecs:UntagResource",
         "ecs:UpdateCluster",
-        "ecs:UpdateClusterSettings"
+        "ecs:UpdateClusterSettings",
+        "ecs:PutClusterCapacityProviders"
       ],
       "Resource": "arn:aws:ecs:*:*:cluster/*"
+    },
+    {
+      "Sid": "ECSCapacityProviderManagement",
+      "Effect": "Allow",
+      "Action": [
+        "ecs:CreateCapacityProvider",
+        "ecs:DeleteCapacityProvider",
+        "ecs:DescribeCapacityProviders",
+        "ecs:UpdateCapacityProvider"
+      ],
+      "Resource": "*"
     },
     {
       "Sid": "ECSTaskDefinitionManagement",
@@ -34,12 +46,10 @@
         "ecs:DescribeServices",
         "ecs:UpdateService",
         "ecs:TagResource",
-        "ecs:UntagResource"
+        "ecs:UntagResource",
+        "ecs:ListServices"
       ],
-      "Resource": [
-        "arn:aws:ecs:*:*:service/*/*",
-        "arn:aws:ecs:*:*:task-definition/*"
-      ]
+      "Resource": "*"
     },
     {
       "Sid": "CloudWatchLogsManagement",
@@ -67,11 +77,15 @@
       "Action": "iam:PassRole",
       "Resource": [
         "arn:aws:iam::*:role/*-task-execution",
-        "arn:aws:iam::*:role/*-task"
+        "arn:aws:iam::*:role/*-task",
+        "arn:aws:iam::*:role/*-ecs-instance"
       ],
       "Condition": {
         "StringEquals": {
-          "iam:PassedToService": "ecs-tasks.amazonaws.com"
+          "iam:PassedToService": [
+            "ecs-tasks.amazonaws.com",
+            "ec2.amazonaws.com"
+          ]
         }
       }
     }
