@@ -1,5 +1,5 @@
 # Root Terraform configuration
-# Orchestrates modules for ECS Fargate deployment
+# Orchestrates modules for ECS (EC2-backed) deployment
 
 locals {
   ecr_repository_arns = [
@@ -56,6 +56,7 @@ module "alb" {
       host_header            = route_config.host_header
     }
   }
+  target_type = "instance"
 }
 
 module "waf" {
@@ -79,4 +80,10 @@ module "ecs" {
   services       = var.ecs_services
 
   alb_target_group_arns = module.alb.target_group_arns
+  ecs_instance_type      = var.ecs_instance_type
+  ecs_asg_min            = var.ecs_asg_min
+  ecs_asg_max            = var.ecs_asg_max
+  ecs_desired_capacity   = var.ecs_desired_capacity
+  ecs_ami_id             = var.ecs_ami_id
+  ecs_instance_profile_name = module.iam.ecs_instance_profile_name
 }

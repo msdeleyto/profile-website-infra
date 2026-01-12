@@ -42,7 +42,7 @@ resource "aws_lb_target_group" "service" {
   port        = each.value.container_port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
-  target_type = "ip" # Required for Fargate
+  target_type = var.target_type
 
   # Health check configuration
   health_check {

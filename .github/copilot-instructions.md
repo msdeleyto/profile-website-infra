@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-This is a **Terraform-based ECS Fargate infrastructure** for deploying containerized web services on AWS. The architecture follows a modular design with clear dependency chains:
+This is a **Terraform-based ECS (EC2-backed) infrastructure** for deploying containerized web services on AWS. The architecture follows a modular design with clear dependency chains:
 
 ```
 main.tf (root) → modules/{network, iam, acm, alb, waf, ecs}
@@ -16,7 +16,7 @@ Key components:
 - **acm**: SSL certificates for HTTPS
 - **alb**: Application Load Balancer with path-based routing
 - **waf**: Web Application Firewall protection
-- **ecs**: Fargate cluster, task definitions, services
+- **ecs**: EC2-backed ECS cluster, task definitions, services
 
 ## Project Conventions
 

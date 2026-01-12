@@ -118,7 +118,7 @@ resource "aws_security_group" "alb" {
 # Security Group for ECS Tasks
 resource "aws_security_group" "ecs" {
   name        = "${var.project_name}-ecs-sg"
-  description = "Security group for ECS Fargate tasks"
+  description = "Security group for ECS container instances / tasks"
   vpc_id      = aws_vpc.main.id
 
   egress {

@@ -55,3 +55,13 @@ variable "services" {
     host_header            = optional(string)
   }))
 }
+
+variable "target_type" {
+  description = "Target type for ALB target groups ('instance' for EC2)"
+  type        = string
+  default     = "instance"
+  validation {
+    condition     = can(regex("^instance$", var.target_type))
+    error_message = "target_type must be 'instance' for this EC2-only setup."
+  }
+}

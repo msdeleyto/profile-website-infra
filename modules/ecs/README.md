@@ -1,12 +1,12 @@
 # ECS Module
 
-Creates an ECS Fargate cluster with task definitions and services for running containerized applications.
+Creates an ECS cluster backed by EC2 instances (Auto Scaling Group) with task definitions and services for running containerized applications.
 
 ## Resources Created
 
 - **ECS Cluster** with Container Insights enabled
 - **CloudWatch Log Groups** (one per service)
-- **Task Definitions** (Fargate, awsvpc network mode)
+- **Task Definitions** (EC2, bridge network mode)
 - **ECS Services** with circuit breaker and ALB integration
 
 ## Deployment Strategy
@@ -17,10 +17,10 @@ Creates an ECS Fargate cluster with task definitions and services for running co
 
 ## Network Configuration
 
-Tasks run in `awsvpc` mode with:
-- Public IP assignment (for public subnets without NAT)
+Tasks run in `bridge` mode on EC2 instances with:
+- Host port mapping (container port -> host port)
 - Security group from network module
-- ALB target group registration
+- ALB target group registration (instance target type)
 
 ## Inputs
 
@@ -46,7 +46,6 @@ services = {
     task_cpu                  = "256"
     task_memory               = "512"
     desired_count             = 1
-    launch_type               = "FARGATE"
     log_retention_days        = 7
     environment_variables     = { ENV = "prod" }
     health_check_command      = ["CMD-SHELL", "curl -f http://localhost || exit 1"]

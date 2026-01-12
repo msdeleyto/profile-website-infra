@@ -37,13 +37,13 @@ resource "aws_cloudwatch_log_group" "service" {
   }
 }
 
-# ECS Task Definition for each service
+# ECS Task Definition for each service (EC2 launch type)
 resource "aws_ecs_task_definition" "service" {
   for_each = var.services
 
   family                   = "${var.project_name}-${each.key}"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
+  network_mode             = "bridge"
+  requires_compatibilities = ["EC2"]
   cpu                      = each.value.task_cpu
   memory                   = each.value.task_memory
   execution_role_arn       = var.task_execution_role_arn
@@ -58,6 +58,7 @@ resource "aws_ecs_task_definition" "service" {
       portMappings = [
         {
           containerPort = each.value.container_port
+          hostPort      = each.value.container_port
           protocol      = "tcp"
         }
       ]
@@ -94,6 +95,85 @@ resource "aws_ecs_task_definition" "service" {
   }
 }
 
+# Get recommended ECS-optimized AMI for Amazon Linux 2
+data "aws_ssm_parameter" "ecs_ami" {
+  name = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
+}
+
+# Launch template for ECS instances
+resource "aws_launch_template" "ecs" {
+  name_prefix   = "${var.project_name}-ecs-"
+  image_id      = coalesce(var.ecs_ami_id, data.aws_ssm_parameter.ecs_ami.value)
+  instance_type = var.ecs_instance_type
+
+  iam_instance_profile {
+    name = var.ecs_instance_profile_name
+  }
+
+  network_interfaces {
+    security_groups = [var.ecs_security_group_id]
+  }
+
+  user_data = base64encode(<<-EOF
+#!/bin/bash
+echo ECS_CLUSTER=${aws_ecs_cluster.main.name} >> /etc/ecs/ecs.config
+EOF
+  )
+}
+
+# Auto Scaling Group for ECS container instances
+resource "aws_autoscaling_group" "ecs" {
+  desired_capacity     = var.ecs_desired_capacity
+  max_size             = var.ecs_asg_max
+  min_size             = var.ecs_asg_min
+  vpc_zone_identifier  = var.subnet_ids
+
+  launch_template {
+    id      = aws_launch_template.ecs.id
+    version = "$Latest"
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "${var.project_name}-ecs-instance"
+    propagate_at_launch = true
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# ECS Capacity Provider backed by the ASG
+resource "aws_ecs_capacity_provider" "ecs" {
+  name = "${var.project_name}-capacity-provider"
+
+  auto_scaling_group_provider {
+    auto_scaling_group_arn = aws_autoscaling_group.ecs.arn
+
+    managed_scaling {
+      status                    = "ENABLED"
+      target_capacity           = 75
+      minimum_scaling_step_size = 1
+      maximum_scaling_step_size = 1000
+    }
+
+    managed_termination_protection = "ENABLED"
+  }
+}
+
+# Attach capacity provider to cluster as default
+resource "aws_ecs_cluster_capacity_providers" "main" {
+  cluster_name        = aws_ecs_cluster.main.name
+  capacity_providers  = [aws_ecs_capacity_provider.ecs.name]
+
+  default_capacity_provider_strategy {
+    capacity_provider = aws_ecs_capacity_provider.ecs.name
+    weight            = 1
+    base              = 0
+  }
+}
+
 # ECS Service for each service
 resource "aws_ecs_service" "service" {
   for_each = var.services
@@ -102,12 +182,12 @@ resource "aws_ecs_service" "service" {
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.service[each.key].arn
   desired_count   = each.value.desired_count
-  launch_type     = each.value.launch_type
+  launch_type = "EC2"
 
-  network_configuration {
-    subnets          = var.subnet_ids
-    security_groups  = [var.ecs_security_group_id]
-    assign_public_ip = true
+  capacity_provider_strategy {
+    capacity_provider = aws_ecs_capacity_provider.ecs.name
+    weight            = 1
+    base              = 0
   }
 
   deployment_maximum_percent         = 200
