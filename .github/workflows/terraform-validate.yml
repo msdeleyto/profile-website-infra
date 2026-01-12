@@ -17,7 +17,8 @@ jobs:
   terraform-checks:
     name: Terraform Validation
     runs-on: ubuntu-latest
-    
+    environment: development
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -33,12 +34,16 @@ jobs:
         continue-on-error: true
 
       - name: Configure AWS credentials
+        id: aws-credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
-          role-session-name: GitHubActions-Terraform
+          role-session-name: GitHubActions-Terraform-Plan
           mask-aws-account-id: true
+
+      - name: Mask AWS account ID
+        run: echo "::add-mask::${{ steps.aws-credentials.outputs.aws-account-id }}"
 
       - name: Terraform Init
         id: init
@@ -54,10 +59,7 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: |
-          terraform plan -out=tfplan -no-color 2>&1 | \
-            sed -E 's/[0-9]{12}/[REDACTED]/g' | \
-            sed -E 's/arn:aws:[^:]*:[^:]*:[^:]*:[^[:space:]]+/arn:aws:[REDACTED]/g'
+        run: terraform plan -out=tfplan -no-color
         continue-on-error: true
 
       - name: TFLint Setup
