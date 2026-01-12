@@ -2,18 +2,18 @@
 
 output "certificate_arn" {
   description = "ARN of the ACM certificate"
-  value       = aws_acm_certificate.main.arn
+  value       = aws_acm_certificate.this.arn
   sensitive   = true
 }
 
 output "certificate_domain_name" {
   description = "Domain name of the certificate"
-  value       = aws_acm_certificate.main.domain_name
+  value       = aws_acm_certificate.this.domain_name
 }
 
 output "certificate_status" {
   description = "Status of the certificate"
-  value       = aws_acm_certificate.main.status
+  value       = aws_acm_certificate.this.status
 }
 
 output "validation_instructions" {

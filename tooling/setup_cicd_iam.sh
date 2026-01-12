@@ -5,7 +5,7 @@ set -euo pipefail
 # Script configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-MODULES_DIR="${PROJECT_ROOT}/modules"
+POLICIES_DIR="${PROJECT_ROOT}/tooling/iam_policies"
 POLICY_NAME_PREFIX="terraform-profile-website-"
 
 # Function to display usage
@@ -41,12 +41,12 @@ check_aws_credentials() {
 
 # Function to create or update IAM policy
 create_or_update_policy() {
-    local module_name=$1
+    local resource_policy_name=$1
     local policy_file=$2
     local policy_name=$3
-    local description="IAM policy to manage ${module_name} related resources from terraform to deploy the profile website infrastructure"
+    local description="IAM policy to manage ${resource_policy_name} related resources from terraform to deploy the profile website infrastructure"
 
-    echo "Processing module: ${module_name}"
+    echo "Processing resource policy: ${resource_policy_name}"
 
     # Check if policy file exists
     if [[ ! -f "${policy_file}" ]]; then
@@ -186,14 +186,14 @@ main() {
     check_aws_credentials
     echo ""
 
-    # Find all iam-policy.json files in modules
+    # Find all *.json policy files in tooling/iam_policies dir
     local policy_files=()
     while IFS= read -r -d '' file; do
         policy_files+=("$file")
-    done < <(find "${MODULES_DIR}" -type f -name "iam-policy.json" -print0 | sort -z)
+    done < <(find "${POLICIES_DIR}" -type f -name "*.json" -print0 | sort -z)
 
     if [[ ${#policy_files[@]} -eq 0 ]]; then
-        echo "[ERROR] No iam-policy.json files found in ${MODULES_DIR}"
+        echo "[ERROR] No *.json files found in ${POLICIES_DIR}"
         exit 1
     fi
 
@@ -208,11 +208,11 @@ main() {
     local fail_count=0
 
     for policy_file in "${policy_files[@]}"; do
-        # Extract module name from path (e.g., modules/network/iam-policy.json -> network)
-        local module_name=$(basename "$(dirname "${policy_file}")")
-        local policy_name="${POLICY_NAME_PREFIX}${module_name}"
+        # Extract resource policy name from policy file (e.g., tooling/iam_policies/s3.json -> s3)
+        local resource_policy_name=$(basename "${policy_file%.*}")
+        local policy_name="${POLICY_NAME_PREFIX}${resource_policy_name}"
 
-        if create_or_update_policy "${module_name}" "${policy_file}" "${policy_name}"; then
+        if create_or_update_policy "${resource_policy_name}" "${policy_file}" "${policy_name}"; then
             local policy_arn=$(aws iam list-policies --scope Local --query "Policies[?PolicyName=='${policy_name}'].Arn" --output text 2>/dev/null || true)
             if ! attach_policy "${policy_arn}" "${principal_type}" "${principal_name}"; then
                 echo "[ERROR] Failed attaching policy: ${policy_name}"

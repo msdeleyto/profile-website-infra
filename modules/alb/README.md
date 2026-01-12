@@ -5,7 +5,7 @@ Creates an Application Load Balancer with HTTPS support and path-based routing t
 ## Resources Created
 
 - **Application Load Balancer** (internet-facing, cross-zone enabled)
-- **Target Groups** (one per service, IP target type for Fargate)
+- **Target Groups** (one per service, instance target type for EC2)
 - **HTTPS Listener** (TLS 1.3, returns 404 by default)
 - **HTTP Listener** (redirects to HTTPS)
 - **Listener Rules** (routes traffic based on path/host patterns)

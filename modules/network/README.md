@@ -1,6 +1,6 @@
 # Network Module
 
-Creates the VPC, subnets, internet gateway, and security groups for ECS Fargate infrastructure.
+Creates the VPC, subnets, internet gateway, and security groups for ECS (EC2-backed) infrastructure.
 
 ## Resources Created
 
@@ -34,5 +34,5 @@ Creates the VPC, subnets, internet gateway, and security groups for ECS Fargate 
 | `public_subnet_ids` | List of public subnet IDs |
 | `private_subnet_ids` | List of private subnet IDs |
 | `alb_security_group_id` | Security group ID for ALB |
-| `ecs_security_group_id` | Security group ID for ECS tasks |
+| `ecs_security_group_id` | Security group ID for ECS container instances / tasks |
 | `internet_gateway_id` | Internet Gateway ID |
