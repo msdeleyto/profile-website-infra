@@ -55,7 +55,6 @@ variable "services" {
     task_cpu                  = string
     task_memory               = string
     desired_count             = number
-    launch_type               = string
     log_retention_days        = number
     environment_variables     = map(string)
     health_check_command      = optional(list(string))
@@ -67,4 +66,36 @@ variable "services" {
 variable "alb_target_group_arns" {
   description = "Map of service names to ALB target group ARNs (empty if ALB not enabled)"
   type        = map(string)
+}
+
+# EC2 instance parameters for ECS cluster
+variable "ecs_instance_type" {
+  description = "EC2 instance type for ECS container instances"
+  type        = string
+}
+
+variable "ecs_asg_min" {
+  description = "Minimum number of EC2 instances in ASG"
+  type        = number
+}
+
+variable "ecs_asg_max" {
+  description = "Maximum number of EC2 instances in ASG"
+  type        = number
+}
+
+variable "ecs_desired_capacity" {
+  description = "Desired number of EC2 instances in ASG"
+  type        = number
+}
+
+variable "ecs_ami_id" {
+  description = "Optional custom AMI ID for ECS instances; if empty module uses recommended ECS AMI"
+  type        = string
+  default     = ""
+}
+
+variable "ecs_instance_profile_name" {
+  description = "Name of the IAM instance profile to attach to ECS EC2 instances (provided by iam module)"
+  type        = string
 }

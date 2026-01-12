@@ -37,10 +37,10 @@ variable "ecs_services" {
     container_port = number
 
     # Optional with defaults
-    task_cpu                  = optional(string, "256")
-    task_memory               = optional(string, "512")
-    desired_count             = optional(number, 1)
-    launch_type               = optional(string, "FARGATE")
+    task_cpu      = optional(string, "256")
+    task_memory   = optional(string, "512")
+    desired_count = optional(number, 1)
+    # launch_type removed — module uses EC2-only
     environment_variables     = optional(map(string), {})
     log_retention_days        = optional(number, 7)
     health_check_command      = optional(list(string), null)
@@ -55,6 +55,37 @@ variable "ecs_services" {
       health_check_command = ["CMD-SHELL", "curl -f http://localhost:80 || exit 1"]
     }
   }
+}
+
+# EC2 instance parameters for ECS cluster (used when running in EC2 launch type)
+variable "ecs_instance_type" {
+  description = "EC2 instance type for ECS container instances"
+  type        = string
+  default     = "t3.small"
+}
+
+variable "ecs_asg_min" {
+  description = "Minimum number of EC2 instances in ASG"
+  type        = number
+  default     = 1
+}
+
+variable "ecs_asg_max" {
+  description = "Maximum number of EC2 instances in ASG"
+  type        = number
+  default     = 2
+}
+
+variable "ecs_desired_capacity" {
+  description = "Desired number of EC2 instances in ASG"
+  type        = number
+  default     = 1
+}
+
+variable "ecs_ami_id" {
+  description = "Optional custom AMI ID for ECS instances; if empty module will use the recommended ECS-optimized AMI"
+  type        = string
+  default     = ""
 }
 
 # HTTPS/TLS Configuration

@@ -1,6 +1,6 @@
-# AWS ECS Fargate Infrastructure
+# AWS ECS (EC2-backed) Infrastructure
 
-Terraform-based infrastructure for deploying containerized web services on AWS using ECS Fargate, with HTTPS, WAF protection, and automated CI/CD deployments.
+Terraform-based infrastructure for deploying containerized web services on AWS using ECS on EC2 instances (Auto Scaling Group), with HTTPS, WAF protection, and automated CI/CD deployments.
 
 ## Architecture
 
@@ -14,8 +14,9 @@ Terraform-based infrastructure for deploying containerized web services on AWS u
                     │  ┌───────────────────────▼───────────────────────┐  │
                     │  │ Public Subnets                                │  │
                     │  │  ┌─────────────┐      ┌─────────────┐         │  │
-                    │  │  │ ECS Fargate │      │ ECS Fargate │         │  │
-                    │  │  │   Task(s)   │      │   Task(s)   │         │  │
+                    │  │  │ ECS on EC2  │      │ ECS on EC2  │         │  │
+                    │  │  │ (container  │      │ (container  │         │  │
+                    │  │  │ instances)  │      │ instances)  │         │  │
                     │  │  └─────────────┘      └─────────────┘         │  │
                     │  └───────────────────────────────────────────────┘  │
                     └─────────────────────────────────────────────────────┘
@@ -25,7 +26,7 @@ Terraform-based infrastructure for deploying containerized web services on AWS u
 - **VPC** with public/private subnets across 2 AZs
 - **Application Load Balancer** with HTTPS (ACM certificate)
 - **WAF** with AWS Managed Rules (OWASP Top 10, bad inputs, IP reputation)
-- **ECS Fargate** cluster running containerized services
+- **ECS (EC2-backed)** cluster running containerized services
 - **CloudWatch** logs with Container Insights enabled
 
 ## Prerequisites
@@ -122,10 +123,10 @@ aws iam create-role \
 
 ### 3. Create and Attach IAM Policies
 
-Use the setup script to create least-privilege policies from module definitions and attach them to the role:
+Use the setup script to create least-privilege policies and attach them to the role:
 
 ```bash
-# Creates policies from modules/*/iam-policy.json and attaches to the role
+# Creates policies from tooling/iam_policies/*.json and attaches to the role
 ./tooling/setup_cicd_iam.sh --type role --name GithubActionsProfileWebsiteTerraformPlan --read-only-policies
 ./tooling/setup_cicd_iam.sh --type role --name GithubActionsProfileWebsiteTerraformApply
 ```
@@ -235,7 +236,7 @@ alb_routes = {
 | `acm` | SSL/TLS certificates for HTTPS |
 | `alb` | Application Load Balancer with path-based routing |
 | `waf` | Web Application Firewall with AWS Managed Rules |
-| `ecs` | Fargate cluster, task definitions, services |
+| `ecs` | EC2-backed ECS cluster, task definitions, services |
 
 ## Project Structure
 
@@ -255,13 +256,14 @@ alb_routes = {
 │   ├── waf/             # Web application firewall
 │   └── ecs/             # ECS cluster and services
 └── tooling/
-    └── setup_cicd_iam.sh  # CI/CD IAM policy setup script
+    ├── setup_cicd_iam.sh    # CI/CD IAM policy setup script
+    └── iam_policies/        # Least-privilege IAM policies for CI/CD
 ```
 
 ## Cost Considerations
 
 - **No NAT Gateway**: ECS tasks run in public subnets with public IPs to avoid NAT Gateway costs (~$32/month per AZ)
-- **Fargate Spot**: Consider using Fargate Spot for non-production workloads (up to 70% savings)
+- **Spot Instances**: Consider using EC2 Spot Instances in the ASG for non-production workloads (substantial cost savings)
 - **Right-sizing**: Default task size is 256 CPU / 512 MB memory - adjust based on actual needs
 
 ## Security Features

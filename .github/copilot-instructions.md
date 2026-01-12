@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-This is a **Terraform-based ECS Fargate infrastructure** for deploying containerized web services on AWS. The architecture follows a modular design with clear dependency chains:
+This is a **Terraform-based ECS (EC2-backed) infrastructure** for deploying containerized web services on AWS. The architecture follows a modular design with clear dependency chains:
 
 ```
 main.tf (root) → modules/{network, iam, acm, alb, waf, ecs}
@@ -16,7 +16,7 @@ Key components:
 - **acm**: SSL certificates for HTTPS
 - **alb**: Application Load Balancer with path-based routing
 - **waf**: Web Application Firewall protection
-- **ecs**: Fargate cluster, task definitions, services
+- **ecs**: EC2-backed ECS cluster, task definitions, services
 
 ## Project Conventions
 
@@ -32,7 +32,6 @@ modules/{name}/
 ├── main.tf           # Resources
 ├── variables.tf      # Inputs
 ├── outputs.tf        # Outputs
-├── iam-policy.json   # Least-privilege IAM policy for CI/CD
 └── README.md         # Module documentation
 ```
 
@@ -101,7 +100,7 @@ To enable GitHub Actions to authenticate with AWS without long-lived credentials
 4. **Configure GitHub secrets**: `AWS_ROLE_ARN`, `AWS_REGION`, `S3_STATE_BUCKET`, `S3_STATE_KEY`
 
 ### IAM Policy Management
-Use [tooling/setup_cicd_iam.sh](tooling/setup_cicd_iam.sh) to create/update IAM policies from module `iam-policy.json` files and attach them to a user or role:
+Use [tooling/setup_cicd_iam.sh](tooling/setup_cicd_iam.sh) to create/update IAM policies from `tooling/iam_policies/*.json` files and attach them to a user or role:
 ```bash
 ./tooling/setup_cicd_iam.sh --type <user|role> --name <name>
 ```

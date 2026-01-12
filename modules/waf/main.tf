@@ -15,7 +15,7 @@ terraform {
 # WAF Web ACL
 ##################################################
 
-resource "aws_wafv2_web_acl" "main" {
+resource "aws_wafv2_web_acl" "this" {
   name        = "${var.project_name}-waf"
   description = "WAF for ${var.project_name} ALB"
   scope       = "REGIONAL"
@@ -139,7 +139,7 @@ resource "aws_wafv2_web_acl" "main" {
 # Associate WAF with ALB
 ##################################################
 
-resource "aws_wafv2_web_acl_association" "alb" {
+resource "aws_wafv2_web_acl_association" "this" {
   resource_arn = var.alb_arn
-  web_acl_arn  = aws_wafv2_web_acl.main.arn
+  web_acl_arn  = aws_wafv2_web_acl.this.arn
 }
