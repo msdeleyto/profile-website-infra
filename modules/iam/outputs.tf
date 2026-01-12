@@ -24,22 +24,22 @@ output "task_role_name" {
 
 output "ecs_instance_role_arn" {
   description = "ARN of the EC2 instance role used by ECS container instances"
-  value       = aws_iam_role.ecs_instance.arn
+  value       = aws_iam_role.instance.arn
   sensitive   = true
 }
 
 output "ecs_instance_role_name" {
   description = "Name of the EC2 instance role used by ECS container instances"
-  value       = aws_iam_role.ecs_instance.name
+  value       = aws_iam_role.instance.name
 }
 
 output "ecs_instance_profile_name" {
   description = "Instance profile name for ECS EC2 instances"
-  value       = aws_iam_instance_profile.ecs_instance.name
+  value       = aws_iam_instance_profile.this.name
 }
 
 output "ecs_instance_profile_arn" {
   description = "Instance profile ARN for ECS EC2 instances"
-  value       = aws_iam_instance_profile.ecs_instance.arn
+  value       = aws_iam_instance_profile.this.arn
   sensitive   = true
 }

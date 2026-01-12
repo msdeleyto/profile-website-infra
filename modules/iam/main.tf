@@ -18,7 +18,7 @@ terraform {
 # Trust Policies (Assume Role)
 ###############################################################################
 
-data "aws_iam_policy_document" "ecs_tasks_assume_role" {
+data "aws_iam_policy_document" "ecs_tasks_assume" {
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
@@ -29,7 +29,7 @@ data "aws_iam_policy_document" "ecs_tasks_assume_role" {
   }
 }
 
-data "aws_iam_policy_document" "ec2_assume_role" {
+data "aws_iam_policy_document" "ec2_assume" {
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
@@ -49,7 +49,7 @@ resource "aws_iam_role" "task_execution" {
   name        = "${var.project_name}-ecs-task-execution"
   description = "ECS task execution role - pulls images from ECR and writes logs to CloudWatch"
 
-  assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume_role.json
+  assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume.json
 
   tags = {
     Name = "${var.project_name}-ecs-task-execution"
@@ -133,7 +133,7 @@ resource "aws_iam_role" "task" {
   name        = "${var.project_name}-ecs-task"
   description = "ECS task role - used by application containers for AWS API calls"
 
-  assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume_role.json
+  assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume.json
 
   tags = {
     Name = "${var.project_name}-ecs-task"
@@ -145,11 +145,11 @@ resource "aws_iam_role" "task" {
 # Used by EC2 instances running the ECS agent
 ###############################################################################
 
-resource "aws_iam_role" "ecs_instance" {
+resource "aws_iam_role" "instance" {
   name        = "${var.project_name}-ecs-instance"
   description = "EC2 instance role for ECS container instances"
 
-  assume_role_policy = data.aws_iam_policy_document.ec2_assume_role.json
+  assume_role_policy = data.aws_iam_policy_document.ec2_assume.json
 
   tags = {
     Name = "${var.project_name}-ecs-instance"
@@ -157,7 +157,7 @@ resource "aws_iam_role" "ecs_instance" {
 }
 
 # Least-privilege policy for ECS EC2 instances
-data "aws_iam_policy_document" "ecs_instance" {
+data "aws_iam_policy_document" "instance" {
   # ECS agent permissions - register/deregister with cluster
   statement {
     sid    = "ECSAgent"
@@ -224,30 +224,30 @@ data "aws_iam_policy_document" "ecs_instance" {
   }
 }
 
-resource "aws_iam_policy" "ecs_instance" {
+resource "aws_iam_policy" "instance" {
   name        = "${var.project_name}-ecs-instance"
   description = "Least-privilege policy for ECS EC2 container instances"
-  policy      = data.aws_iam_policy_document.ecs_instance.json
+  policy      = data.aws_iam_policy_document.instance.json
 
   tags = {
     Name = "${var.project_name}-ecs-instance"
   }
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_instance" {
-  role       = aws_iam_role.ecs_instance.name
-  policy_arn = aws_iam_policy.ecs_instance.arn
+resource "aws_iam_role_policy_attachment" "instance" {
+  role       = aws_iam_role.instance.name
+  policy_arn = aws_iam_policy.instance.arn
 }
 
 # SSM permissions for ECS Exec and Session Manager (optional but recommended)
-resource "aws_iam_role_policy_attachment" "ecs_instance_ssm" {
-  role       = aws_iam_role.ecs_instance.name
+resource "aws_iam_role_policy_attachment" "instance_ssm" {
+  role       = aws_iam_role.instance.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-resource "aws_iam_instance_profile" "ecs_instance" {
+resource "aws_iam_instance_profile" "this" {
   name = "${var.project_name}-ecs-instance-profile"
-  role = aws_iam_role.ecs_instance.name
+  role = aws_iam_role.instance.name
 
   tags = {
     Name = "${var.project_name}-ecs-instance-profile"
