@@ -14,12 +14,29 @@
         "iam:TagRole",
         "iam:UntagRole",
         "iam:UpdateRole",
-        "iam:UpdateAssumeRolePolicy"
+        "iam:PassRole",
+        "iam:UpdateAssumeRolePolicy",
+        "iam:UpdateRoleDescription"
       ],
       "Resource": [
         "arn:aws:iam::*:role/*-ecs-task-execution",
-        "arn:aws:iam::*:role/*-ecs-task"
+        "arn:aws:iam::*:role/*-ecs-task",
+        "arn:aws:iam::*:role/*-ecs-instance"
       ]
+    },
+    {
+      "Sid": "IAMInstanceProfileManagement",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateInstanceProfile",
+        "iam:DeleteInstanceProfile",
+        "iam:GetInstanceProfile",
+        "iam:AddRoleToInstanceProfile",
+        "iam:RemoveRoleFromInstanceProfile",
+        "iam:TagInstanceProfile",
+        "iam:UntagInstanceProfile"
+      ],
+      "Resource": "arn:aws:iam::*:instance-profile/*-ecs-instance*"
     },
     {
       "Sid": "IAMPolicyManagement",
@@ -46,7 +63,8 @@
       ],
       "Resource": [
         "arn:aws:iam::*:role/*-ecs-task-execution",
-        "arn:aws:iam::*:role/*-ecs-task"
+        "arn:aws:iam::*:role/*-ecs-task",
+        "arn:aws:iam::*:role/*-ecs-instance"
       ]
     }
   ]
