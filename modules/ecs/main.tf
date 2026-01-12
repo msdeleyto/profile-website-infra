@@ -123,10 +123,10 @@ EOF
 
 # Auto Scaling Group for ECS container instances
 resource "aws_autoscaling_group" "this" {
-  desired_capacity     = var.ecs_desired_capacity
-  max_size             = var.ecs_asg_max
-  min_size             = var.ecs_asg_min
-  vpc_zone_identifier  = var.subnet_ids
+  desired_capacity    = var.ecs_desired_capacity
+  max_size            = var.ecs_asg_max
+  min_size            = var.ecs_asg_min
+  vpc_zone_identifier = var.subnet_ids
 
   launch_template {
     id      = aws_launch_template.this.id
@@ -164,8 +164,8 @@ resource "aws_ecs_capacity_provider" "this" {
 
 # Attach capacity provider to cluster as default
 resource "aws_ecs_cluster_capacity_providers" "this" {
-  cluster_name        = aws_ecs_cluster.this.name
-  capacity_providers  = [aws_ecs_capacity_provider.this.name]
+  cluster_name       = aws_ecs_cluster.this.name
+  capacity_providers = [aws_ecs_capacity_provider.this.name]
 
   default_capacity_provider_strategy {
     capacity_provider = aws_ecs_capacity_provider.this.name
@@ -182,7 +182,7 @@ resource "aws_ecs_service" "this" {
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.this[each.key].arn
   desired_count   = each.value.desired_count
-  launch_type = "EC2"
+  launch_type     = "EC2"
 
   capacity_provider_strategy {
     capacity_provider = aws_ecs_capacity_provider.this.name
