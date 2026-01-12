@@ -20,11 +20,13 @@ output "private_subnet_ids" {
 output "iam_task_execution_role_arn" {
   description = "ARN of the ECS task execution role"
   value       = module.iam.task_execution_role_arn
+  sensitive   = true
 }
 
 output "iam_task_role_arn" {
   description = "ARN of the ECS task role"
   value       = module.iam.task_role_arn
+  sensitive   = true
 }
 
 # ECS outputs

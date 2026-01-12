@@ -15,7 +15,7 @@ terraform {
 # Application Load Balancer
 ##################################################
 
-resource "aws_lb" "main" {
+resource "aws_lb" "this" {
   name               = "${var.project_name}-alb"
   internal           = false
   load_balancer_type = "application"
@@ -35,7 +35,7 @@ resource "aws_lb" "main" {
 # Target Groups (one per service)
 ##################################################
 
-resource "aws_lb_target_group" "service" {
+resource "aws_lb_target_group" "this" {
   for_each = var.services
 
   name        = "${var.project_name}-${each.key}-tg"
@@ -77,7 +77,7 @@ resource "aws_lb_target_group" "service" {
 resource "aws_lb_listener" "https" {
   count = 1
 
-  load_balancer_arn = aws_lb.main.arn
+  load_balancer_arn = aws_lb.this.arn
   port              = 443
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
@@ -102,7 +102,7 @@ resource "aws_lb_listener" "https" {
 resource "aws_lb_listener" "http_redirect" {
   count = 1
 
-  load_balancer_arn = aws_lb.main.arn
+  load_balancer_arn = aws_lb.this.arn
   port              = 80
   protocol          = "HTTP"
 
@@ -124,7 +124,7 @@ resource "aws_lb_listener" "http_redirect" {
 # Listener Rules (route traffic to services)
 ##################################################
 
-resource "aws_lb_listener_rule" "service" {
+resource "aws_lb_listener_rule" "this" {
   for_each = var.services
 
   # Use HTTPS listener if certificate provided, otherwise HTTP direct listener
@@ -133,7 +133,7 @@ resource "aws_lb_listener_rule" "service" {
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.service[each.key].arn
+    target_group_arn = aws_lb_target_group.this[each.key].arn
   }
 
   # Route based on path pattern or host header
