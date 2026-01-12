@@ -100,10 +100,10 @@ aws iam create-role \
 
 ### 3. Create and Attach IAM Policies
 
-Use the setup script to create least-privilege policies from module definitions and attach them to the role:
+Use the setup script to create least-privilege policies and attach them to the role:
 
 ```bash
-# Creates policies from modules/*/iam-policy.json and attaches to the role
+# Creates policies from tooling/iam_policies/*.json and attaches to the role
 ./tooling/setup_cicd_iam.sh --type role --name github-actions-terraform
 ```
 
@@ -219,7 +219,8 @@ alb_routes = {
 │   ├── waf/             # Web application firewall
 │   └── ecs/             # ECS cluster and services
 └── tooling/
-    └── setup_cicd_iam.sh  # CI/CD IAM policy setup script
+    ├── setup_cicd_iam.sh    # CI/CD IAM policy setup script
+    └── iam_policies/        # Least-privilege IAM policies for CI/CD
 ```
 
 ## Cost Considerations
