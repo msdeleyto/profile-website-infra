@@ -10,16 +10,25 @@ POLICY_NAME_PREFIX="terraform-profile-website-"
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 --type <user|role> --name <name>"
+    echo "Usage: $0 --type <user|role> --name <name> [--scope <plan|apply>]"
     echo ""
     echo "Options:"
-    echo "  --type, -t    Type of IAM principal (user or role)"
-    echo "  --name, -n    Name of the IAM user or role to attach policies to"
-    echo "  --help, -h    Show this help message"
+    echo "  --type, -t     Type of IAM principal (user or role)"
+    echo "  --name, -n     Name of the IAM user or role to attach policies to"
+    echo "  --scope, -s    Scope of policies to attach:"
+    echo "                   plan  - Read-only policies for terraform init/plan (CI PR checks)"
+    echo "                   apply - Full write policies for terraform apply (default)"
+    echo "  --help, -h     Show this help message"
     echo ""
     echo "Examples:"
+    echo "  # Plan-only role for PR checks (read-only, can't mutate infrastructure)"
+    echo "  $0 --type role --name github-actions-terraform-plan --scope plan"
+    echo ""
+    echo "  # Apply role for main branch (full permissions)"
+    echo "  $0 --type role --name github-actions-terraform-apply --scope apply"
+    echo ""
+    echo "  # Legacy: attach all apply policies (default behavior)"
     echo "  $0 --type user --name terraform-deployer"
-    echo "  $0 --type role --name github-actions-terraform"
     exit 1
 }
 
@@ -141,6 +150,7 @@ attach_policy() {
 main() {
     local principal_type=""
     local principal_name=""
+    local scope="apply"
 
     # Parse arguments
     while [[ $# -gt 0 ]]; do
@@ -151,6 +161,10 @@ main() {
                 ;;
             --name|-n)
                 principal_name="$2"
+                shift 2
+                ;;
+            --scope|-s)
+                scope="$2"
                 shift 2
                 ;;
             --help|-h)
@@ -177,8 +191,15 @@ main() {
         usage
     fi
 
+    # Validate scope
+    if [[ "${scope}" != "plan" && "${scope}" != "apply" ]]; then
+        echo "[ERROR] Scope must be 'plan' or 'apply'"
+        echo ""
+        usage
+    fi
+
     echo "=== IAM Policy Creation Script ==="
-    echo "Attaching policies to ${principal_type}: ${principal_name}"
+    echo "Attaching ${scope} policies to ${principal_type}: ${principal_name}"
     echo ""
 
     # Preflight checks
@@ -186,18 +207,26 @@ main() {
     check_aws_credentials
     echo ""
 
-    # Find all *.json policy files in tooling/iam_policies dir
+    # Determine which directory to scan based on scope
+    local scan_dir
+    if [[ "${scope}" == "plan" ]]; then
+        scan_dir="${POLICIES_DIR}/plan"
+    else
+        scan_dir="${POLICIES_DIR}/apply"
+    fi
+
+    # Find all *.json policy files in the appropriate directory
     local policy_files=()
     while IFS= read -r -d '' file; do
         policy_files+=("$file")
-    done < <(find "${POLICIES_DIR}" -type f -name "*.json" -print0 | sort -z)
+    done < <(find "${scan_dir}" -type f -name "*.json" -print0 | sort -z)
 
     if [[ ${#policy_files[@]} -eq 0 ]]; then
-        echo "[ERROR] No *.json files found in ${POLICIES_DIR}"
+        echo "[ERROR] No *.json files found in ${scan_dir}"
         exit 1
     fi
 
-    echo "Found ${#policy_files[@]} policy file(s):"
+    echo "Found ${#policy_files[@]} policy file(s) for scope '${scope}':"
     for file in "${policy_files[@]}"; do
         echo "  - ${file}"
     done
@@ -208,9 +237,9 @@ main() {
     local fail_count=0
 
     for policy_file in "${policy_files[@]}"; do
-        # Extract resource policy name from policy file (e.g., tooling/iam_policies/s3.json -> s3)
+        # Extract resource policy name from policy file (e.g., plan/s3.json -> plan-s3)
         local resource_policy_name=$(basename "${policy_file%.*}")
-        local policy_name="${POLICY_NAME_PREFIX}${resource_policy_name}"
+        local policy_name="${POLICY_NAME_PREFIX}${scope}-${resource_policy_name}"
 
         if create_or_update_policy "${resource_policy_name}" "${policy_file}" "${policy_name}"; then
             local policy_arn=$(aws iam list-policies --scope Local --query "Policies[?PolicyName=='${policy_name}'].Arn" --output text 2>/dev/null || true)
