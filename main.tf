@@ -79,11 +79,11 @@ module "ecs" {
   service_images = local.ecs_service_images
   services       = var.ecs_services
 
-  alb_target_group_arns = module.alb.target_group_arns
-  ecs_instance_type      = var.ecs_instance_type
-  ecs_asg_min            = var.ecs_asg_min
-  ecs_asg_max            = var.ecs_asg_max
-  ecs_desired_capacity   = var.ecs_desired_capacity
-  ecs_ami_id             = var.ecs_ami_id
+  alb_target_group_arns     = module.alb.target_group_arns
+  ecs_instance_type         = var.ecs_instance_type
+  ecs_asg_min               = var.ecs_asg_min
+  ecs_asg_max               = var.ecs_asg_max
+  ecs_desired_capacity      = var.ecs_desired_capacity
+  ecs_ami_id                = var.ecs_ami_id
   ecs_instance_profile_name = module.iam.ecs_instance_profile_name
 }

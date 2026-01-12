@@ -37,9 +37,9 @@ variable "ecs_services" {
     container_port = number
 
     # Optional with defaults
-    task_cpu                  = optional(string, "256")
-    task_memory               = optional(string, "512")
-    desired_count             = optional(number, 1)
+    task_cpu      = optional(string, "256")
+    task_memory   = optional(string, "512")
+    desired_count = optional(number, 1)
     # launch_type removed — module uses EC2-only
     environment_variables     = optional(map(string), {})
     log_retention_days        = optional(number, 7)
