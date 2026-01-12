@@ -183,7 +183,6 @@ resource "aws_ecs_service" "this" {
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.this[each.key].arn
   desired_count   = each.value.desired_count
-  launch_type     = "EC2"
 
   capacity_provider_strategy {
     capacity_provider = aws_ecs_capacity_provider.this.name
