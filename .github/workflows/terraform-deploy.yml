@@ -29,12 +29,16 @@ jobs:
           terraform_version: "~> 1.5"
 
       - name: Configure AWS credentials
+        id: aws-credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
-          role-session-name: GitHubActions-Terraform
+          role-session-name: GitHubActions-Terraform-Apply
           mask-aws-account-id: true
+
+      - name: Mask AWS account ID
+        run: echo "::add-mask::${{ steps.aws-credentials.outputs.aws-account-id }}"
 
       - name: Terraform Init
         run: |
