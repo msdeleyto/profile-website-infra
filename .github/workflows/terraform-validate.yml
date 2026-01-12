@@ -17,7 +17,8 @@ jobs:
   terraform-checks:
     name: Terraform Validation
     runs-on: ubuntu-latest
-    
+    environment: development
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

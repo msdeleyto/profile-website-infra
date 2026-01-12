@@ -53,7 +53,7 @@ aws s3api put-bucket-versioning \
 
 ### 2. Set Up GitHub OIDC Authentication in AWS
 
-This allows GitHub Actions to authenticate without long-lived credentials.
+This allows GitHub Actions to authenticate without long-lived credentials. To enhance security create 2 roles, one for pull requests validation, another one for deployment.
 
 #### Create OIDC Identity Provider
 
@@ -66,7 +66,27 @@ aws iam create-open-id-connect-provider \
 
 #### Create IAM Role for GitHub Actions
 
-1. Create the trust policy file (`github-trust-policy.json`):
+1. Create the trust policy file (`github-trust-policy-plan.json`):
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": {
+      "Federated": "arn:aws:iam::<ACCOUNT_ID>:oidc-provider/token.actions.githubusercontent.com"
+    },
+    "Action": "sts:AssumeRoleWithWebIdentity",
+    "Condition": {
+      "StringLike": {
+        "token.actions.githubusercontent.com:sub": "repo:<OWNER>/<REPO>:pull_request"
+      }
+    }
+  }]
+}
+```
+
+2. Create the trust policy file (`github-trust-policy-apply.json`):
 
 ```json
 {
@@ -79,22 +99,24 @@ aws iam create-open-id-connect-provider \
     "Action": "sts:AssumeRoleWithWebIdentity",
     "Condition": {
       "StringEquals": {
-        "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
-      },
-      "StringLike": {
-        "token.actions.githubusercontent.com:sub": "repo:<OWNER>/<REPO>:*"
+        "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+        "token.actions.githubusercontent.com:sub": "repo:<OWNER>/<REPO>:environment:production"
       }
     }
   }]
 }
 ```
 
-2. Create the role:
+2. Create the roles:
 
 ```bash
 aws iam create-role \
-  --role-name github-actions-terraform \
-  --assume-role-policy-document file://github-trust-policy.json
+  --role-name GithubActionsProfileWebsiteTerraformPlan \
+  --assume-role-policy-document file://github-trust-policy-plan.json
+
+aws iam create-role \
+  --role-name GithubActionsProfileWebsiteTerraformApply \
+  --assume-role-policy-document file://github-trust-policy-apply.json
 ```
 
 ### 3. Create and Attach IAM Policies
@@ -103,7 +125,8 @@ Use the setup script to create least-privilege policies from module definitions 
 
 ```bash
 # Creates policies from modules/*/iam-policy.json and attaches to the role
-./tooling/setup_cicd_iam.sh --type role --name github-actions-terraform
+./tooling/setup_cicd_iam.sh --type role --name GithubActionsProfileWebsiteTerraformPlan
+./tooling/setup_cicd_iam.sh --type role --name GithubActionsProfileWebsiteTerraformApply
 ```
 
 For local development with an IAM user instead:
@@ -118,10 +141,23 @@ Add these secrets to your GitHub repository (Settings → Secrets and variables 
 
 | Secret | Description | Example |
 |--------|-------------|---------|
-| `AWS_ROLE_ARN` | ARN of the GitHub Actions IAM role | `arn:aws:iam::123456789012:role/github-actions-terraform` |
 | `AWS_REGION` | AWS region for deployment | `aws-region` |
 | `S3_STATE_BUCKET` | S3 bucket for Terraform state | `terraform-state-bucket` |
 | `S3_STATE_KEY` | State file path in bucket | `terraform-state-key` |
+
+#### Environment secrets
+
+##### Development
+
+| Secret | Description | Example |
+|--------|-------------|---------|
+| `AWS_ROLE_ARN` | ARN of the GitHub Actions IAM role to run terraform plan  | `arn:aws:iam::123456789012:role/github-actions-terraform` |
+
+##### Production
+
+| Secret | Description | Example |
+|--------|-------------|---------|
+| `AWS_ROLE_ARN` | ARN of the GitHub Actions IAM role to run terraform apply  | `arn:aws:iam::123456789012:role/github-actions-terraform` |
 
 ### 5. Configure Terraform Variables
 
