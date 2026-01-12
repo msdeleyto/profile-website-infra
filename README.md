@@ -78,8 +78,9 @@ aws iam create-open-id-connect-provider \
     },
     "Action": "sts:AssumeRoleWithWebIdentity",
     "Condition": {
-      "StringLike": {
-        "token.actions.githubusercontent.com:sub": "repo:<OWNER>/<REPO>:pull_request"
+      "StringEquals": {
+        "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+        "token.actions.githubusercontent.com:sub": "repo:<OWNER>/<REPO>:environment:development"
       }
     }
   }]
@@ -125,7 +126,7 @@ Use the setup script to create least-privilege policies from module definitions 
 
 ```bash
 # Creates policies from modules/*/iam-policy.json and attaches to the role
-./tooling/setup_cicd_iam.sh --type role --name GithubActionsProfileWebsiteTerraformPlan
+./tooling/setup_cicd_iam.sh --type role --name GithubActionsProfileWebsiteTerraformPlan --read-only-policies
 ./tooling/setup_cicd_iam.sh --type role --name GithubActionsProfileWebsiteTerraformApply
 ```
 
