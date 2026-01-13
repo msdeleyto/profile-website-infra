@@ -58,10 +58,6 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
 
-      - name: Terraform Output
-        if: success()
-        run: terraform output -json
-
       - name: Deployment Summary
         if: always()
         run: |
