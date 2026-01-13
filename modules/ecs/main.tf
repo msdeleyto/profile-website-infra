@@ -123,10 +123,10 @@ EOF
 
 # Auto Scaling Group for ECS container instances
 resource "aws_autoscaling_group" "this" {
-  desired_capacity    = var.ecs_desired_capacity
-  max_size            = var.ecs_asg_max
-  min_size            = var.ecs_asg_min
-  vpc_zone_identifier = var.subnet_ids
+  desired_capacity      = var.ecs_desired_capacity
+  max_size              = var.ecs_asg_max
+  min_size              = var.ecs_asg_min
+  vpc_zone_identifier   = var.subnet_ids
   protect_from_scale_in = true
 
   launch_template {

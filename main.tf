@@ -3,10 +3,10 @@
 
 locals {
   ecr_repository_arns = [
-    "arn:aws:ecr:us-east-1:${data.aws_caller_identity.current.account_id}:repository/web/profile"
+    "arn:aws:ecr:${var.aws_region}:${data.aws_caller_identity.current.account_id}:repository/web/profile"
   ]
   ecs_service_images = {
-    web = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/web/profile:34cdc7bf062150e4b25d9330ce5dcde8ea1529e1"
+    web = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/web/profile:34cdc7bf062150e4b25d9330ce5dcde8ea1529e1"
   }
 }
 
