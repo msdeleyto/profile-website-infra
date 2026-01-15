@@ -61,7 +61,7 @@ variable "ecs_services" {
 variable "ecs_instance_type" {
   description = "EC2 instance type for ECS container instances"
   type        = string
-  default     = "t3.small"
+  default     = "	t4g.small"
 }
 
 variable "ecs_asg_min" {
@@ -74,12 +74,6 @@ variable "ecs_asg_max" {
   description = "Maximum number of EC2 instances in ASG"
   type        = number
   default     = 2
-}
-
-variable "ecs_desired_capacity" {
-  description = "Desired number of EC2 instances in ASG"
-  type        = number
-  default     = 1
 }
 
 variable "ecs_ami_id" {

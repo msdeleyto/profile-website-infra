@@ -84,11 +84,6 @@ variable "ecs_asg_max" {
   type        = number
 }
 
-variable "ecs_desired_capacity" {
-  description = "Desired number of EC2 instances in ASG"
-  type        = number
-}
-
 variable "ecs_ami_id" {
   description = "Optional custom AMI ID for ECS instances; if empty module uses recommended ECS AMI"
   type        = string
