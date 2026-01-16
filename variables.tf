@@ -79,7 +79,7 @@ variable "ecs_asg_max" {
 variable "ecs_ami_id" {
   description = "Optional custom AMI ID for ECS instances; if empty module will use the recommended ECS-optimized AMI"
   type        = string
-  default     = "ami-08dec4a34ea9ae8ee"
+  default     = ""
 }
 
 # HTTPS/TLS Configuration

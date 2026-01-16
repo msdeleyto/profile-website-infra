@@ -143,6 +143,15 @@ resource "aws_autoscaling_group" "this" {
     version = "$Latest"
   }
 
+  # Automatically replace instances when launch template changes (e.g., AMI or instance type)
+  instance_refresh {
+    strategy = "Rolling"
+    preferences {
+      min_healthy_percentage = 50
+      instance_warmup        = 120
+    }
+  }
+
   tag {
     key                 = "Name"
     value               = "${var.project_name}-ecs-instance"
