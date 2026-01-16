@@ -89,15 +89,20 @@ resource "aws_ecs_task_definition" "this" {
     }
   ])
 
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
+
   tags = {
     Name    = "${var.project_name}-${each.key}-task"
     Service = each.key
   }
 }
 
-# Get recommended ECS-optimized AMI for Amazon Linux 2
+# Get recommended ECS-optimized AMI for Amazon Linux 2023
 data "aws_ssm_parameter" "this" {
-  name = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
+  name = "/aws/service/ecs/optimized-ami/amazon-linux-2023/recommended/image_id"
 }
 
 # Launch template for ECS instances
@@ -108,6 +113,10 @@ resource "aws_launch_template" "this" {
 
   iam_instance_profile {
     name = var.ecs_instance_profile_name
+  }
+
+  metadata_options {
+    http_tokens = "required"
   }
 
   network_interfaces {
@@ -123,7 +132,6 @@ EOF
 
 # Auto Scaling Group for ECS container instances
 resource "aws_autoscaling_group" "this" {
-  desired_capacity      = var.ecs_desired_capacity
   max_size              = var.ecs_asg_max
   min_size              = var.ecs_asg_min
   vpc_zone_identifier   = var.subnet_ids
