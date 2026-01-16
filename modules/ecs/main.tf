@@ -107,9 +107,10 @@ data "aws_ssm_parameter" "this" {
 
 # Launch template for ECS instances
 resource "aws_launch_template" "this" {
-  name_prefix   = "${var.project_name}-ecs-"
-  image_id      = coalesce(var.ecs_ami_id, data.aws_ssm_parameter.this.value)
-  instance_type = var.ecs_instance_type
+  name_prefix            = "${var.project_name}-ecs-"
+  image_id               = coalesce(var.ecs_ami_id, data.aws_ssm_parameter.this.value)
+  instance_type          = var.ecs_instance_type
+  update_default_version = true
 
   iam_instance_profile {
     name = var.ecs_instance_profile_name
