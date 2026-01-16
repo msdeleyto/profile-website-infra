@@ -102,7 +102,7 @@ resource "aws_ecs_task_definition" "this" {
 
 # Get recommended ECS-optimized AMI for Amazon Linux 2023
 data "aws_ssm_parameter" "this" {
-  name = "/aws/service/ecs/optimized-ami/amazon-linux-2023/recommended/image_id"
+  name = "/aws/service/ecs/optimized-ami/amazon-linux-2023/arm64/recommended/image_id"
 }
 
 # Launch template for ECS instances
