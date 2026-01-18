@@ -32,4 +32,3 @@ jobs:
           s3-state-bucket: ${{ secrets.S3_STATE_BUCKET }}
           s3-state-key: ${{ secrets.S3_PROD_STATE_KEY }}
           terraform-version: "~> 1.5"
-          auto-approve: "true"
