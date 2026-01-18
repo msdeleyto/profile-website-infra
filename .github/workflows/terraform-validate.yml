@@ -87,21 +87,12 @@ jobs:
             // Post new comment with combined results
             const output = `## Terraform Validation Results
 
-            ### Test Environment
-            | Check | Status |
-            |-------|--------|
-            | Format   | ${getIcon(testResults.fmt)} |
-            | Validate | ${getIcon(testResults.validate)} |
-            | Plan     | ${getIcon(testResults.plan)} |
-            | TFLint   | ${getIcon(testResults.tflint)} |
-
-            ### Prod Environment
-            | Check | Status |
-            |-------|--------|
-            | Format   | ${getIcon(prodResults.fmt)} |
-            | Validate | ${getIcon(prodResults.validate)} |
-            | Plan     | ${getIcon(prodResults.plan)} |
-            | TFLint   | ${getIcon(prodResults.tflint)} |`;
+            | Check | Test | Prod |
+            |-------|--------|--------|
+            | Format   | ${getIcon(testResults.fmt)} | ${getIcon(prodResults.fmt)} |
+            | Validate | ${getIcon(testResults.validate)} | ${getIcon(prodResults.validate)} |
+            | Plan     | ${getIcon(testResults.plan)} | ${getIcon(prodResults.plan)} |
+            | TFLint   | ${getIcon(testResults.tflint)} | ${getIcon(prodResults.tflint)} |`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
