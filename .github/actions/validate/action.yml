@@ -22,18 +22,9 @@ inputs:
     required: true
 
 outputs:
-  fmt-outcome:
-    description: 'Outcome of terraform fmt check'
-    value: ${{ steps.fmt.outcome }}
-  validate-outcome:
-    description: 'Outcome of terraform validate'
-    value: ${{ steps.validate.outcome }}
-  plan-outcome:
-    description: 'Outcome of terraform plan'
-    value: ${{ steps.plan.outcome }}
-  tflint-outcome:
-    description: 'Outcome of TFLint'
-    value: ${{ steps.tflint.outcome }}
+  results:
+    description: 'Combined validation results as JSON'
+    value: ${{ steps.results.outputs.json }}
 
 runs:
   using: 'composite'
@@ -84,6 +75,15 @@ runs:
       working-directory: envs/${{ inputs.environment }}
       run: tflint --recursive --format compact
       continue-on-error: true
+
+    - name: Generate Results JSON
+      id: results
+      shell: bash
+      if: always()
+      run: |
+        cat << EOF >> $GITHUB_OUTPUT
+        json={"fmt":"${{ steps.fmt.outcome }}","validate":"${{ steps.validate.outcome }}","plan":"${{ steps.plan.outcome }}","tflint":"${{ steps.tflint.outcome }}"}
+        EOF
 
     - name: Validation Summary
       shell: bash
