@@ -42,6 +42,11 @@ jobs:
       run: tflint --recursive --format compact
       continue-on-error: true
 
+    - name: Check for failures
+      shell: bash
+      if: steps.fmt.outcome == 'failure' || steps.tflint.outcome == 'failure'
+      run: exit 1
+
     outputs:
       fmt-outcome: ${{ steps.fmt.outcome }}
       tflint-outcome: ${{ steps.tflint.outcome }}
@@ -107,9 +112,9 @@ jobs:
 
             // Helper function to convert outcome to icon
             const getIcon = (outcome) => {
-              if (outcome === 'success') return '✅';
-              if (outcome === 'failure') return '❌';
-              return '⚠️';
+              if (outcome === 'success') return ':heavy_check_mark:';
+              if (outcome === 'failure') return ':x:';
+              return ':warning:';
             };
 
             // Parse results
@@ -118,18 +123,11 @@ jobs:
 
             // Post new comment with combined results
             const output = `## Terraform Validation Results
-
-            ### Static Checks
-            | Check | Status |
-            |-------|--------|
-            | Format | ${getIcon('${{ needs.lint.outputs.fmt-outcome }}')} |
-            | TFLint | ${getIcon('${{ needs.lint.outputs.tflint-outcome }}')} |
-
-            ### Environment Validation
-            | Check | Test | Prod |
+            ||||
             |-------|------|------|
-            | Validate | ${getIcon(testResults.validate)} | ${getIcon(prodResults.validate)} |
-            | Plan | ${getIcon(testResults.plan)} | ${getIcon(prodResults.plan)} |`;
+            | Lint | Format ${getIcon('${{ needs.lint.outputs.fmt-outcome }}')} | TFLint ${getIcon('${{ needs.lint.outputs.tflint-outcome }}')} | 
+            | Test | Validate ${getIcon(testResults.validate)} | Plan ${getIcon(testResults.validate)} |
+            | Prod | Validate ${getIcon(prodResults.plan)} | Plan ${getIcon(prodResults.plan)} |`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
