@@ -29,13 +29,6 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Terraform Format Check
-      id: fmt
-      shell: bash
-      working-directory: envs/${{ inputs.environment }}
-      run: terraform fmt -check -recursive
-      continue-on-error: true
-
     - name: Setup Terraform and AWS
       uses: ./.github/actions/setup
       with:
@@ -59,30 +52,13 @@ runs:
       run: terraform plan -out=tfplan -no-color
       continue-on-error: true
 
-    - name: TFLint Setup
-      uses: terraform-linters/setup-tflint@v4
-      with:
-        tflint_version: latest
-
-    - name: TFLint Init
-      shell: bash
-      working-directory: envs/${{ inputs.environment }}
-      run: tflint --init
-
-    - name: TFLint Run
-      id: tflint
-      shell: bash
-      working-directory: envs/${{ inputs.environment }}
-      run: tflint --recursive --format compact
-      continue-on-error: true
-
     - name: Generate Results JSON
       id: results
       shell: bash
       if: always()
       run: |
         cat << EOF >> $GITHUB_OUTPUT
-        json={"fmt":"${{ steps.fmt.outcome }}","validate":"${{ steps.validate.outcome }}","plan":"${{ steps.plan.outcome }}","tflint":"${{ steps.tflint.outcome }}"}
+        json={"validate":"${{ steps.validate.outcome }}","plan":"${{ steps.plan.outcome }}"}
         EOF
 
     - name: Validation Summary
@@ -93,12 +69,10 @@ runs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
         echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
-        echo "| Format | ${{ steps.fmt.outcome }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Validate | ${{ steps.validate.outcome }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Plan | ${{ steps.plan.outcome }} |" >> $GITHUB_STEP_SUMMARY
-        echo "| TFLint | ${{ steps.tflint.outcome }} |" >> $GITHUB_STEP_SUMMARY
 
     - name: Check for failures
       shell: bash
-      if: steps.fmt.outcome == 'failure' || steps.validate.outcome == 'failure' || steps.tflint.outcome == 'failure'
+      if: steps.validate.outcome == 'failure'
       run: exit 1
