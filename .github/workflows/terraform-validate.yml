@@ -23,57 +23,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "~> 1.5"
-
-      - name: Terraform Format Check
-        id: fmt
-        run: terraform fmt -check -recursive
-        continue-on-error: true
-
-      - name: Configure AWS credentials
-        id: aws-credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          role-session-name: GitHubActions-Terraform-Plan
-          mask-aws-account-id: true
-
-      - name: Mask AWS account ID
-        run: echo "::add-mask::${{ steps.aws-credentials.outputs.aws-account-id }}"
-
-      - name: Terraform Init
-        id: init
-        run: |
-          terraform init \
-            -backend-config="bucket=${{ secrets.S3_STATE_BUCKET }}" \
-            -backend-config="key=${{ secrets.S3_STATE_KEY }}" \
-            -backend-config="region=${{ secrets.AWS_REGION }}"
-
-      - name: Terraform Validate
+      - name: Validate Terraform
         id: validate
-        run: terraform validate -no-color
-
-      - name: Terraform Plan
-        id: plan
-        run: terraform plan -out=tfplan -no-color
-        continue-on-error: true
-
-      - name: TFLint Setup
-        uses: terraform-linters/setup-tflint@v4
+        uses: ./.github/actions/validate
         with:
-          tflint_version: latest
-
-      - name: TFLint Init
-        run: tflint --init
-
-      - name: TFLint Run
-        id: tflint
-        run: tflint --recursive --format compact
-        continue-on-error: true
+          environment: prod
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          s3-state-bucket: ${{ secrets.S3_STATE_BUCKET }}
+          s3-state-key: ${{ secrets.S3_STATE_KEY }}
+          terraform-version: "~> 1.5"
 
       - name: Comment PR with Results
         if: github.event_name == 'pull_request'
@@ -108,17 +67,14 @@ jobs:
             };
 
             // Post new comment with table
-            const output = `## Terraform Validation Results
+            const output = `## Terraform Validation Results (prod)
 
             | Check | Status |
             |-------|--------|
-            | Format   | ${getIcon('${{ steps.fmt.outcome }}')} |
-            | Init     | ${getIcon('${{ steps.init.outcome }}')} |
-            | Validate | ${getIcon('${{ steps.validate.outcome }}')} |
-            | Plan     | ${getIcon('${{ steps.plan.outcome }}')} |
-            | TFLint   | ${getIcon('${{ steps.tflint.outcome }}')} |
-
-            *Pushed by: @${{ github.actor }}*`;
+            | Format   | ${getIcon('${{ steps.validate.outputs.fmt-outcome }}')} |
+            | Validate | ${getIcon('${{ steps.validate.outputs.validate-outcome }}')} |
+            | Plan     | ${getIcon('${{ steps.validate.outputs.plan-outcome }}')} |
+            | TFLint   | ${getIcon('${{ steps.validate.outputs.tflint-outcome }}')} |
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -127,18 +83,6 @@ jobs:
               body: output
             })
 
-      - name: Fail if any step failed
-        if: steps.fmt.outcome == 'failure' || steps.init.outcome == 'failure' || steps.validate.outcome == 'failure' || steps.tflint.outcome == 'failure'
+      - name: Fail if validation failed
+        if: failure()
         run: exit 1
-
-      - name: Summary
-        run: |
-          echo "## Terraform Validation Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Format | ${{ steps.fmt.outcome }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Init | ${{ steps.init.outcome }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Validate | ${{ steps.validate.outcome }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Plan | ${{ steps.plan.outcome }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| TFLint | ${{ steps.tflint.outcome }} |" >> $GITHUB_STEP_SUMMARY
