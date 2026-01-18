@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "project_name" {
   description = "Project name used for resource naming (lowercase, hyphens)"
   type        = string
-  default     = "profile-website"
+  default     = "prod-profile-website"
 
   validation {
     condition     = can(regex("^[a-z0-9-]+$", var.project_name))
@@ -19,13 +19,13 @@ variable "project_name" {
 variable "vpc_cidr" {
   description = "CIDR block for VPC"
   type        = string
-  default     = "10.0.0.0/16"
+  default     = "10.0.0.0/23"
 }
 
 variable "availability_zones" {
   description = "List of availability zones"
   type        = list(string)
-  default     = ["us-east-1a", "us-east-1b"]
+  default     = ["us-east-1a"]
 }
 
 # ECS Services Specs

@@ -1,5 +1,4 @@
-# Root Terraform configuration
-# Orchestrates modules for ECS (EC2-backed) deployment
+data "aws_caller_identity" "current" {}
 
 locals {
   ecr_repository_arns = [
@@ -11,7 +10,7 @@ locals {
 }
 
 module "network" {
-  source = "./modules/network"
+  source = "../../modules/network"
 
   project_name       = var.project_name
   vpc_cidr           = var.vpc_cidr
@@ -19,21 +18,21 @@ module "network" {
 }
 
 module "iam" {
-  source = "./modules/iam"
+  source = "../../modules/iam"
 
   project_name        = var.project_name
   ecr_repository_arns = local.ecr_repository_arns
 }
 
 module "acm" {
-  source = "./modules/acm"
+  source = "../../modules/acm"
 
   project_name = var.project_name
   domain_name  = var.domain_name
 }
 
 module "alb" {
-  source = "./modules/alb"
+  source = "../../modules/alb"
 
   project_name          = var.project_name
   vpc_id                = module.network.vpc_id
@@ -60,14 +59,14 @@ module "alb" {
 }
 
 module "waf" {
-  source = "./modules/waf"
+  source = "../../modules/waf"
 
   project_name = var.project_name
   alb_arn      = module.alb.alb_arn
 }
 
 module "ecs" {
-  source = "./modules/ecs"
+  source = "../../modules/ecs"
 
   project_name            = var.project_name
   subnet_ids              = module.network.public_subnet_ids
