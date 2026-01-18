@@ -49,7 +49,7 @@ runs:
       id: plan
       shell: bash
       working-directory: envs/${{ inputs.environment }}
-      run: terraform plan -out=tfplan -no-color
+      run: terraform plan -no-color
       continue-on-error: true
 
     - name: Generate Results JSON
