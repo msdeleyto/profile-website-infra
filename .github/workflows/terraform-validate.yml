@@ -101,7 +101,7 @@ jobs:
             | Format   | ${getIcon(prodResults.fmt)} |
             | Validate | ${getIcon(prodResults.validate)} |
             | Plan     | ${getIcon(prodResults.plan)} |
-            | TFLint   | ${getIcon(prodResults.tflint)} |
+            | TFLint   | ${getIcon(prodResults.tflint)} |`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
