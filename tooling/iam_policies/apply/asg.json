@@ -30,6 +30,7 @@
         "autoscaling:SetDesiredCapacity",
         "autoscaling:TerminateInstanceInAutoScalingGroup",
         "autoscaling:UpdateAutoScalingGroup",
+        "autoscaling:StartInstanceRefresh",
         "autoscaling:CreateOrUpdateTags",
         "autoscaling:DeleteTags"
       ],
