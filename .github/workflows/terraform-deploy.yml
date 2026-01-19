@@ -18,17 +18,21 @@ jobs:
     name: Terraform Apply
     runs-on: ubuntu-latest
     environment: production
+    strategy:
+      matrix:
+        environment: [test, prod]
+      fail-fast: false
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Deploy Terraform
-        uses: ./.github/actions/deploy
-        with:
-          environment: prod
-          aws-region: ${{ secrets.AWS_REGION }}
-          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-          s3-state-bucket: ${{ secrets.S3_STATE_BUCKET }}
-          s3-state-key: ${{ secrets.S3_PROD_STATE_KEY }}
-          terraform-version: "~> 1.5"
+    - name: Deploy Terraform
+      uses: ./.github/actions/deploy
+      with:
+        environment: ${{ matrix.environment }}
+        aws-region: ${{ secrets.AWS_REGION }}
+        aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+        s3-state-bucket: ${{ secrets.S3_STATE_BUCKET }}
+        s3-state-key: ${{ matrix.environment == 'prod' && secrets.S3_PROD_STATE_KEY || secrets.S3_TEST_STATE_KEY }}
+        terraform-version: "~> 1.5"
