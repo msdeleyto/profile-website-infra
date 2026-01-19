@@ -15,15 +15,8 @@ variable "project_name" {
   }
 }
 
-# Network
 variable "vpc_cidr" {
   description = "CIDR block for VPC"
   type        = string
   default     = "10.0.64.0/18"
-}
-
-variable "availability_zones" {
-  description = "List of availability zones"
-  type        = list(string)
-  default     = ["us-east-1c", "us-east-1d"]
 }
