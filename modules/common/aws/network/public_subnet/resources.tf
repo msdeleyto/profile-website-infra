@@ -16,7 +16,7 @@ resource "aws_subnet" "this" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "${var.name}-public-subnet-${var.availability_zone}"
+    Name = "${var.name}-public-subnet${var.name_suffix}"
     Type = "public"
   }
 }
@@ -30,7 +30,7 @@ resource "aws_route_table" "this" {
   }
 
   tags = {
-    Name = "${var.name}-public-rt"
+    Name = "${var.name}-public-rt${var.name_suffix}"
   }
 }
 

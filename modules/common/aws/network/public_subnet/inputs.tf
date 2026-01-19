@@ -3,6 +3,12 @@ variable "name" {
   type        = string
 }
 
+variable "name_suffix" {
+  description = "Suffix used for resource naming"
+  type        = string
+  default     = ""
+}
+
 variable "vpc_id" {
   description = "VPC id to attach the network gateway to"
   type        = string

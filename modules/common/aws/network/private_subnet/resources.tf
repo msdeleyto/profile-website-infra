@@ -16,7 +16,7 @@ resource "aws_subnet" "this" {
   map_public_ip_on_launch = false
 
   tags = {
-    Name = "${var.name}-private-subnet-${var.availability_zone}"
+    Name = "${var.name}-private-subnet${var.name_suffix}"
     Type = "private"
   }
 }
@@ -25,7 +25,7 @@ resource "aws_route_table" "this" {
   vpc_id = var.vpc_id
 
   tags = {
-    Name = "${var.name}-private-rt"
+    Name = "${var.name}-private-rt${var.name_suffix}"
   }
 }
 
