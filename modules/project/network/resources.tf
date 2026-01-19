@@ -14,7 +14,6 @@ module "vpc" {
 
   name   = var.project_name
   cidr   = var.vpc_cidr
-  region = var.region
 }
 
 module "igw" {
