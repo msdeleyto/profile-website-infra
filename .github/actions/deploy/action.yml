@@ -1,0 +1,65 @@
+name: 'Terraform Deploy'
+description: 'Deploys Terraform configuration for a specific environment'
+
+inputs:
+  environment:
+    description: 'Environment to deploy (test/prod)'
+    required: true
+  aws-region:
+    description: 'AWS region'
+    required: true
+  aws-role-arn:
+    description: 'AWS IAM role ARN to assume'
+    required: true
+  s3-state-bucket:
+    description: 'S3 bucket for Terraform state'
+    required: true
+  s3-state-key:
+    description: 'S3 key for Terraform state'
+    required: true
+  terraform-version:
+    description: 'Terraform version to use'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Terraform and AWS
+      uses: ./.github/actions/setup
+      with:
+        environment: ${{ inputs.environment }}
+        aws-region: ${{ inputs.aws-region }}
+        aws-role-arn: ${{ inputs.aws-role-arn }}
+        s3-state-bucket: ${{ inputs.s3-state-bucket }}
+        s3-state-key: ${{ inputs.s3-state-key }}
+        terraform-version: ${{ inputs.terraform-version }}
+
+    - name: Terraform Plan
+      id: plan
+      shell: bash
+      working-directory: envs/${{ inputs.environment }}
+      run: terraform plan -out=tfplan -no-color 2>&1
+
+    - name: Terraform Plan Status
+      shell: bash
+      if: steps.plan.outcome == 'failure'
+      run: exit 1
+
+    - name: Terraform Apply
+      id: apply
+      shell: bash
+      working-directory: envs/${{ inputs.environment }}
+      run: terraform apply -auto-approve tfplan
+
+    - name: Deployment Summary
+      shell: bash
+      if: always()
+      run: |
+        echo "## Deployment Summary (${{ inputs.environment }})" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Plan | ${{ steps.plan.outcome }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Apply | ${{ steps.apply.outcome }} |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY

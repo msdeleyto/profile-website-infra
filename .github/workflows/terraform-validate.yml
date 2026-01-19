@@ -14,69 +14,84 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  terraform-checks:
-    name: Terraform Validation
+  lint:
+    name: Validate static code
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "~> 1.5"
+
+    - name: Terraform Format Check
+      id: fmt
+      shell: bash
+      run: terraform fmt -check -recursive
+      continue-on-error: true
+
+    - name: TFLint Setup
+      uses: terraform-linters/setup-tflint@v4
+      with:
+        tflint_version: latest
+
+    - name: TFLint Init
+      shell: bash
+      run: tflint --init
+
+    - name: TFLint Run
+      id: tflint
+      shell: bash
+      run: tflint --recursive --format compact
+      continue-on-error: true
+
+    - name: Check for failures
+      shell: bash
+      if: steps.fmt.outcome == 'failure' || steps.tflint.outcome == 'failure'
+      run: exit 1
+
+    outputs:
+      fmt-outcome: ${{ steps.fmt.outcome }}
+      tflint-outcome: ${{ steps.tflint.outcome }}
+
+  validate:
+    name: Validate ${{ matrix.environment }}
     runs-on: ubuntu-latest
     environment: development
+    strategy:
+      matrix:
+        environment: [test, prod]
+      fail-fast: false
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "~> 1.5"
+    - name: Validate Terraform
+      id: validate
+      uses: ./.github/actions/validate
+      with:
+        environment: ${{ matrix.environment }}
+        aws-region: ${{ secrets.AWS_REGION }}
+        aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+        s3-state-bucket: ${{ secrets.S3_STATE_BUCKET }}
+        s3-state-key: ${{ matrix.environment == 'prod' && secrets.S3_PROD_STATE_KEY || secrets.S3_TEST_STATE_KEY }}
+        terraform-version: "~> 1.5"
 
-      - name: Terraform Format Check
-        id: fmt
-        run: terraform fmt -check -recursive
-        continue-on-error: true
+    outputs:
+      test-results: ${{ matrix.environment == 'test' && steps.validate.outputs.results || '' }}
+      prod-results: ${{ matrix.environment == 'prod' && steps.validate.outputs.results || '' }}
 
-      - name: Configure AWS credentials
-        id: aws-credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          role-session-name: GitHubActions-Terraform-Plan
-          mask-aws-account-id: true
+  comment:
+    name: Comment PR
+    runs-on: ubuntu-latest
+    needs: [lint, validate]
+    if: github.event_name == 'pull_request' && always()
 
-      - name: Mask AWS account ID
-        run: echo "::add-mask::${{ steps.aws-credentials.outputs.aws-account-id }}"
-
-      - name: Terraform Init
-        id: init
-        run: |
-          terraform init \
-            -backend-config="bucket=${{ secrets.S3_STATE_BUCKET }}" \
-            -backend-config="key=${{ secrets.S3_STATE_KEY }}" \
-            -backend-config="region=${{ secrets.AWS_REGION }}"
-
-      - name: Terraform Validate
-        id: validate
-        run: terraform validate -no-color
-
-      - name: Terraform Plan
-        id: plan
-        run: terraform plan -out=tfplan -no-color
-        continue-on-error: true
-
-      - name: TFLint Setup
-        uses: terraform-linters/setup-tflint@v4
-        with:
-          tflint_version: latest
-
-      - name: TFLint Init
-        run: tflint --init
-
-      - name: TFLint Run
-        id: tflint
-        run: tflint --recursive --format compact
-        continue-on-error: true
-
+    steps:
       - name: Comment PR with Results
-        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -102,23 +117,22 @@ jobs:
 
             // Helper function to convert outcome to icon
             const getIcon = (outcome) => {
-              if (outcome === 'success') return '✅';
-              if (outcome === 'failure') return '❌';
-              return '⚠️';
+              if (outcome === 'success') return ':heavy_check_mark:';
+              if (outcome === 'failure') return ':x:';
+              return ':warning:';
             };
 
-            // Post new comment with table
+            // Parse results
+            const testResults = JSON.parse('${{ needs.validate.outputs.test-results }}' || '{}');
+            const prodResults = JSON.parse('${{ needs.validate.outputs.prod-results }}' || '{}');
+
+            // Post new comment with combined results
             const output = `## Terraform Validation Results
-
-            | Check | Status |
-            |-------|--------|
-            | Format   | ${getIcon('${{ steps.fmt.outcome }}')} |
-            | Init     | ${getIcon('${{ steps.init.outcome }}')} |
-            | Validate | ${getIcon('${{ steps.validate.outcome }}')} |
-            | Plan     | ${getIcon('${{ steps.plan.outcome }}')} |
-            | TFLint   | ${getIcon('${{ steps.tflint.outcome }}')} |
-
-            *Pushed by: @${{ github.actor }}*`;
+            ||||
+            |-------|------|------|
+            | Lint | Format ${getIcon('${{ needs.lint.outputs.fmt-outcome }}')} | TFLint ${getIcon('${{ needs.lint.outputs.tflint-outcome }}')} | 
+            | Test | Validate ${getIcon(testResults.validate)} | Plan ${getIcon(testResults.validate)} |
+            | Prod | Validate ${getIcon(prodResults.plan)} | Plan ${getIcon(prodResults.plan)} |`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -126,19 +140,3 @@ jobs:
               repo: context.repo.repo,
               body: output
             })
-
-      - name: Fail if any step failed
-        if: steps.fmt.outcome == 'failure' || steps.init.outcome == 'failure' || steps.validate.outcome == 'failure' || steps.tflint.outcome == 'failure'
-        run: exit 1
-
-      - name: Summary
-        run: |
-          echo "## Terraform Validation Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Format | ${{ steps.fmt.outcome }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Init | ${{ steps.init.outcome }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Validate | ${{ steps.validate.outcome }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Plan | ${{ steps.plan.outcome }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| TFLint | ${{ steps.tflint.outcome }} |" >> $GITHUB_STEP_SUMMARY

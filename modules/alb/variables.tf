@@ -26,11 +26,6 @@ variable "public_subnet_ids" {
   description = "List of public subnet IDs for ALB"
   type        = list(string)
   sensitive   = true
-
-  validation {
-    condition     = length(var.public_subnet_ids) >= 2
-    error_message = "At least 2 public subnets required for ALB (multi-AZ)."
-  }
 }
 
 variable "certificate_arn" {

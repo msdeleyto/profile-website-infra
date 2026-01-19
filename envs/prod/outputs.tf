@@ -1,5 +1,3 @@
-# Root outputs for cross-module references
-
 # Network outputs
 output "vpc_id" {
   description = "VPC ID"
