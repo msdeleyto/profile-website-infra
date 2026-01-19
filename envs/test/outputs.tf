@@ -1,5 +1,3 @@
-# Root outputs for cross-module references
-
 # Network outputs
 output "vpc_id" {
   description = "VPC ID"
@@ -14,64 +12,4 @@ output "public_subnet_ids" {
 output "private_subnet_ids" {
   description = "Private subnet IDs"
   value       = module.network.private_subnet_ids
-}
-
-# IAM outputs
-output "iam_task_execution_role_arn" {
-  description = "ARN of the ECS task execution role"
-  value       = module.iam.task_execution_role_arn
-  sensitive   = true
-}
-
-output "iam_task_role_arn" {
-  description = "ARN of the ECS task role"
-  value       = module.iam.task_role_arn
-  sensitive   = true
-}
-
-# ECS outputs
-output "ecs_cluster_name" {
-  description = "Name of the ECS cluster"
-  value       = module.ecs.cluster_name
-}
-
-output "ecs_service_names" {
-  description = "Map of service names"
-  value       = module.ecs.service_names
-}
-
-# ALB outputs (conditional)
-output "alb_dns_name" {
-  description = "DNS name of the Application Load Balancer (use this to access services)"
-  value       = module.alb.alb_dns_name
-}
-
-output "alb_zone_id" {
-  description = "Zone ID of the ALB for Route53"
-  value       = module.alb.alb_zone_id
-  sensitive   = true
-}
-
-# ACM outputs (conditional)
-output "acm_certificate_arn" {
-  description = "ARN of the ACM certificate"
-  value       = module.acm.certificate_arn
-  sensitive   = true
-}
-
-output "acm_certificate_status" {
-  description = "Status of the ACM certificate"
-  value       = module.acm.certificate_status
-}
-
-# WAF outputs (conditional)
-output "waf_web_acl_arn" {
-  description = "ARN of the WAF Web ACL"
-  value       = module.waf.web_acl_arn
-  sensitive   = true
-}
-
-output "waf_web_acl_name" {
-  description = "Name of the WAF Web ACL"
-  value       = module.waf.web_acl_name
 }
