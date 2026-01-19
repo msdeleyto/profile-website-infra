@@ -3,5 +3,4 @@ module "network" {
 
   project_name = var.project_name
   vpc_cidr     = var.vpc_cidr
-  region       = var.aws_region
 }
