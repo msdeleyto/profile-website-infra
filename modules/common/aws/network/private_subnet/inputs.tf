@@ -23,3 +23,8 @@ variable "cidr_block" {
   description = "CIDR block for subnet"
   type        = string
 }
+
+variable "nacl_id" {
+  description = "NACL ID"
+  type        = string
+}

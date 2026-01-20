@@ -28,3 +28,8 @@ variable "internet_gateway_id" {
   description = "Internet Gateway ID"
   type        = string
 }
+
+variable "nacl_id" {
+  description = "NACL ID"
+  type        = string
+}
