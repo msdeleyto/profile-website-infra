@@ -46,6 +46,11 @@ variable "subnet_ids" {
   type        = list(string)
 }
 
+variable "use_spot" {
+  description = "Whether to use Spot instances instead of on-demand"
+  type        = bool
+}
+
 variable "alb_target_group_arn" {
   description = "ALB target group ARN"
   type        = string

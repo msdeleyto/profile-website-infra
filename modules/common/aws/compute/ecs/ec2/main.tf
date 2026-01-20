@@ -32,9 +32,22 @@ resource "aws_launch_template" "this" {
     security_groups = [var.security_group_id]
   }
 
+  dynamic "instance_market_options" {
+    for_each = var.use_spot ? [1] : []
+    content {
+      market_type = "spot"
+      spot_options {
+        spot_instance_type             = "one-time"
+        instance_interruption_behavior = "terminate"
+      }
+    }
+  }
+
   user_data = base64encode(<<-EOF
 #!/bin/bash
 echo ECS_CLUSTER=${var.ecs_cluster_name} >> /etc/ecs/ecs.config
+# Enable Spot instance draining for graceful task shutdown
+echo ECS_ENABLE_SPOT_INSTANCE_DRAINING=true >> /etc/ecs/ecs.config
 EOF
   )
 }

@@ -23,6 +23,11 @@ variable "security_group_id" {
   type        = string
 }
 
+variable "use_spot" {
+  description = "Whether to use Spot instances instead of on-demand"
+  type        = bool
+}
+
 variable "asg_max" {
   description = "Maximum number of EC2 instances in ASG"
   type        = number

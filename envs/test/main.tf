@@ -55,6 +55,7 @@ module "web" {
   service_image       = local.service_images["web"]
   aws_region          = var.aws_region
   instance_type       = "t4g.micro"
+  use_spot            = true
 }
 
 module "database" {

@@ -42,4 +42,5 @@ module "compute" {
   aws_region              = var.aws_region
   subnet_ids              = module.network.subnet_ids
   alb_target_group_arn    = module.network.alb_target_group_arn
+  use_spot                = var.use_spot
 }

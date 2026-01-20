@@ -60,3 +60,9 @@ variable "instance_type" {
   description = "EC2 instance type for ECS container instances"
   type        = string
 }
+
+variable "use_spot" {
+  description = "Whether to use Spot instances instead of on-demand"
+  type        = bool
+  default     = false
+}

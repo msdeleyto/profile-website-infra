@@ -40,6 +40,7 @@ module "ecs_service" {
   instance_type         = var.instance_type
   instance_profile_name = var.instance_profile_name
   security_group_id     = var.security_group_id
+  use_spot              = var.use_spot
   asg_max               = 2
   asg_min               = 1
   desired_count         = 1
