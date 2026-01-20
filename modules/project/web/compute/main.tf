@@ -35,18 +35,18 @@ module "ecs_task_definition" {
 module "ecs_service" {
   source = "../../../common/aws/compute/ecs/ec2"
 
-  name                      = "${var.project_name}-web"
-  ami_id                    = ""
-  instance_type             = var.instance_type
-  instance_profile_name     = var.instance_profile_name
-  security_group_id         = var.security_group_id
-  asg_max                   = 2
-  asg_min                   = 1
-  desired_count             = 1
-  subnet_ids                = var.subnet_ids
-  ecs_cluster_id            = module.ecs_cluster.id
-  task_definition_arn       = module.ecs_task_definition.arn
-  alb_target_group_arn      = var.alb_target_group_arn
-  container_name            = "web"
-  container_port            = 80
+  name                  = "${var.project_name}-web"
+  ami_id                = ""
+  instance_type         = var.instance_type
+  instance_profile_name = var.instance_profile_name
+  security_group_id     = var.security_group_id
+  asg_max               = 2
+  asg_min               = 1
+  desired_count         = 1
+  subnet_ids            = var.subnet_ids
+  ecs_cluster_id        = module.ecs_cluster.id
+  task_definition_arn   = module.ecs_task_definition.arn
+  alb_target_group_arn  = var.alb_target_group_arn
+  container_name        = "web"
+  container_port        = 80
 }
