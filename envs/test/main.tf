@@ -6,24 +6,32 @@ locals {
   ]
 }
 
-module "vpc" {
+module "core" {
   source = "../../modules/project/core"
 
   project_name = var.project_name
   vpc_cidr     = var.vpc_cidr
 }
 
-module "web_network" {
-  source = "../../modules/project/web/network"
+module "web" {
+  source = "../../modules/project/web"
 
   project_name       = var.project_name
-  vpc_id             = module.vpc.vpc_id
-  igw_id             = module.vpc.igw_id
+  vpc_id             = module.core.vpc_id
+  igw_id             = module.core.igw_id
   vpc_cidr           = var.vpc_cidr
   availability_zones = var.availability_zones
   nacl_rules = [
     {
       rule_number = 100
+      egress      = false
+      protocol    = "tcp"
+      cidr        = "0.0.0.0/0"
+      from_port   = 80
+      to_port     = 80
+    },
+    {
+      rule_number = 200
       egress      = false
       protocol    = "tcp"
       cidr        = "0.0.0.0/0"
@@ -39,23 +47,6 @@ module "web_network" {
       to_port     = 65535
     }
   ]
-  sg_rules = {
-    cidr_rules = {
-      ingress = [
-        {
-          cidr        = "0.0.0.0/0"
-          from_port   = 443
-          ip_protocol = "tcp"
-          to_port     = 443
-        }
-      ]
-      egress = []
-    }
-    sg_id_rules = {
-      ingress = []
-      egress  = []
-    }
-  }
   alb_target_type = "instance"
   domain_name     = "test.msdeleyto.es"
   alb_target_groups = {
@@ -73,37 +64,15 @@ module "web_network" {
       host_header            = "test.msdeleyto.es"
     }
   }
-}
-
-module "database_network" {
-  source = "../../modules/project/database/network"
-
-  project_name       = var.project_name
-  vpc_id             = module.vpc.vpc_id
-  vpc_cidr           = var.vpc_cidr
-  availability_zones = var.availability_zones
-  sg_rules = {
-    cidr_rules = {
-      ingress = []
-      egress  = []
-    }
-    sg_id_rules = {
-      ingress = [
-        {
-          referenced_security_group_id = module.web_network.security_group_id
-          from_port                    = 5432
-          ip_protocol                  = "tcp"
-          to_port                      = 5432
-        }
-      ]
-      egress = []
-    }
-  }
-}
-
-module "web_permissions" {
-  source = "../../modules/project/web/permissions"
-
-  project_name        = var.project_name
   ecr_repository_arns = local.ecr_repository_arns
+}
+
+module "database" {
+  source = "../../modules/project/database"
+
+  project_name          = var.project_name
+  vpc_id                = module.core.vpc_id
+  vpc_cidr              = var.vpc_cidr
+  availability_zones    = var.availability_zones
+  web_security_group_id = module.web_network.ecs_security_group_id
 }

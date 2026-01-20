@@ -77,7 +77,10 @@ module "role" {
     type        = "Service"
     identifiers = ["ec2.amazonaws.com"]
   }
-  policy_arns = [module.policy.arn]
+  policy_arns = [
+    module.policy.arn,
+    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  ]
 }
 
 module "instance_profile" {

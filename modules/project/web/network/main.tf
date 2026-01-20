@@ -30,12 +30,72 @@ module "subnets" {
   nacl_id             = module.nacl.id
 }
 
-module "security_group" {
+module "alb_security_group" {
   source = "../../../common/aws/network/security_group"
 
-  name   = "${var.project_name}-web"
+  name   = "${var.project_name}-web-alb"
   vpc_id = var.vpc_id
-  rules  = var.sg_rules
+  rules = {
+    cidr_rules = {
+      ingress = [
+        {
+          cidr        = "0.0.0.0/0"
+          ip_protocol = "tcp"
+          from_port   = 443
+          to_port     = 443
+        },
+        {
+          cidr        = "0.0.0.0/0"
+          ip_protocol = "tcp"
+          from_port   = 80
+          to_port     = 80
+        }
+      ]
+      egress = [
+        {
+          cidr        = "0.0.0.0/0"
+          ip_protocol = "-1"
+          from_port   = 0
+          to_port     = 0
+        }
+      ]
+    }
+    sg_id_rules = {
+      ingress = []
+      egress  = []
+    }
+  }
+}
+
+module "ecs_security_group" {
+  source = "../../../common/aws/network/security_group"
+
+  name   = "${var.project_name}-web-ecs"
+  vpc_id = var.vpc_id
+  rules = {
+    cidr_rules = {
+      ingress = []
+      egress = [
+        {
+          cidr        = "0.0.0.0/0"
+          ip_protocol = "-1"
+          from_port   = 0
+          to_port     = 0
+        }
+      ]
+    }
+    sg_id_rules = {
+      ingress = [
+        {
+          referenced_security_group_id = module.alb_security_group.id
+          ip_protocol                  = "tcp"
+          from_port                    = 80
+          to_port                      = 80
+        }
+      ]
+      egress = []
+    }
+  }
 }
 
 module "acm" {

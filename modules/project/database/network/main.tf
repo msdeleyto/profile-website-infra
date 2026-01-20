@@ -34,5 +34,21 @@ module "security_group" {
 
   name   = "${var.project_name}-database"
   vpc_id = var.vpc_id
-  rules  = var.sg_rules
+  rules = {
+    cidr_rules = {
+      ingress = []
+      egress  = []
+    }
+    sg_id_rules = {
+      ingress = [
+        {
+          referenced_security_group_id = var.web_security_group_id
+          from_port                    = 5432
+          ip_protocol                  = "tcp"
+          to_port                      = 5432
+        }
+      ]
+      egress = []
+    }
+  }
 }
