@@ -1,19 +1,22 @@
-output "task_execution_role_name" {
-  description = "Name of the ECS role used by ECS task execution"
-  value       = module.task_execution.role_name
+output "task_execution_role_arn" {
+  description = "ECS task execution role ARN"
+  value       = module.task_execution.role_arn
+  sensitive   = true
 }
 
-output "task_role_name" {
-  description = "Name of the ECS role used by ECS tasks"
-  value       = module.task.role_name
+output "task_role_arn" {
+  description = "ECS task role ARN"
+  value       = module.task.role_arn
+  sensitive   = true
 }
 
-output "ec2_role_name" {
-  description = "Name of the EC2 instance role used by ECS container instances"
-  value       = module.ec2.role_name
+output "ec2_role_arn" {
+  description = "ECS EC2 container instances role ARN"
+  value       = module.ec2.role_arn
+  sensitive   = true
 }
 
 output "ec2_instance_profile_name" {
-  description = "Instance profile name for ECS EC2 instances"
+  description = "ECS EC2 instance profile name"
   value       = module.ec2.instance_profile_name
 }

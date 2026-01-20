@@ -48,7 +48,7 @@ resource "aws_lb_target_group" "this" {
 
   tags = {
     Name    = "${var.name}-web-tg"
-    Service = each.key
+    Service = var.name
   }
 
   lifecycle {
@@ -108,7 +108,7 @@ resource "aws_lb_listener_rule" "this" {
 
   condition {
     path_pattern {
-      values = "/*"
+      values = ["/*"]
     }
   }
 

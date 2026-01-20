@@ -45,6 +45,7 @@ module "ecs_service" {
   desired_count         = 1
   subnet_ids            = var.subnet_ids
   ecs_cluster_id        = module.ecs_cluster.id
+  ecs_cluster_name      = module.ecs_cluster.name
   task_definition_arn   = module.ecs_task_definition.arn
   alb_target_group_arn  = var.alb_target_group_arn
   container_name        = "web"

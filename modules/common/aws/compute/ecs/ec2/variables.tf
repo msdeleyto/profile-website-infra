@@ -48,6 +48,11 @@ variable "ecs_cluster_id" {
   type        = string
 }
 
+variable "ecs_cluster_name" {
+  description = "ECS cluster name"
+  type        = string
+}
+
 variable "task_definition_arn" {
   description = "ECS task definition ARN"
   type        = string

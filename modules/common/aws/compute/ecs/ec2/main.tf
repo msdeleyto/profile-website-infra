@@ -34,7 +34,7 @@ resource "aws_launch_template" "this" {
 
   user_data = base64encode(<<-EOF
 #!/bin/bash
-echo ECS_CLUSTER=${aws_ecs_cluster.this.name} >> /etc/ecs/ecs.config
+echo ECS_CLUSTER=${var.ecs_cluster_name} >> /etc/ecs/ecs.config
 EOF
   )
 }
@@ -97,7 +97,7 @@ resource "aws_ecs_capacity_provider" "this" {
 
 # Attach capacity provider to cluster as default
 resource "aws_ecs_cluster_capacity_providers" "this" {
-  cluster_name       = aws_ecs_cluster.this.name
+  cluster_name       = var.ecs_cluster_name
   capacity_providers = [aws_ecs_capacity_provider.this.name]
 
   default_capacity_provider_strategy {
@@ -127,7 +127,7 @@ resource "aws_ecs_service" "this" {
     rollback = true
   }
 
-  health_check_grace_period_seconds = 30
+  health_check_grace_period_seconds = 60
 
   load_balancer {
     target_group_arn = var.alb_target_group_arn
