@@ -1,5 +1,5 @@
 # Network outputs
 output "vpc_id" {
   description = "VPC ID"
-  value       = module.network.vpc_id
+  value       = module.vpc.vpc_id
 }
