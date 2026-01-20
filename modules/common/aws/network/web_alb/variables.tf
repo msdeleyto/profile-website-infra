@@ -6,22 +6,19 @@ variable "name" {
 variable "vpc_id" {
   description = "VPC id"
   type        = string
-  sensitive   = true
 }
 
 variable "security_group_ids" {
   description = "Security group id for ALB"
   type        = list(string)
-  sensitive   = true
 }
 
 variable "subnet_ids" {
   description = "List of subnet ids for ALB"
   type        = list(string)
-  sensitive   = true
 
   validation {
-    condition     = length(var.public_subnet_ids) >= 2
+    condition     = length(var.subnet_ids) >= 2
     error_message = "At least 2 public subnets required for ALB (multi-AZ)."
   }
 }
@@ -32,7 +29,7 @@ variable "certificate_arn" {
   sensitive   = true
 }
 
-variable "services" {
+variable "target_groups" {
   description = "Map of service routing configurations for ALB"
   type = map(object({
     container_port         = number

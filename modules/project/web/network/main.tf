@@ -37,3 +37,22 @@ module "security_group" {
   vpc_id = var.vpc_id
   rules  = var.sg_rules
 }
+
+module "acm" {
+  source = "../../../common/aws/network/acm"
+
+  project_name = var.project_name
+  domain_name  = var.domain_name
+}
+
+module "alb" {
+  source = "../../../common/aws/network/web_alb"
+
+  name               = var.project_name
+  vpc_id             = var.vpc_id
+  subnet_ids         = module.subnets[*].subnet_id
+  certificate_arn    = module.acm.certificate_arn
+  target_type        = var.alb_target_type
+  security_group_ids = [module.security_group.id]
+  target_groups      = var.alb_target_groups
+}

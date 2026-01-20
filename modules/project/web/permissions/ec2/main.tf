@@ -8,16 +8,16 @@ terraform {
   }
 }
 
-module "policies" {
-  source = "../../../../../common/aws/iam/policy"
+module "policy" {
+  source = "../../../../common/aws/iam/policy"
 
   name        = "${var.project_name}-ec2-ecs"
   description = "IAM policy for EC2 instances managed by ECS"
   statements = [
     {
-      sid       = "ECSAgent"
+      sid    = "ECSAgent"
       effect = "Allow"
-      actions   = [
+      actions = [
         "ecs:RegisterContainerInstance",
         "ecs:DeregisterContainerInstance",
         "ecs:DiscoverPollEndpoint",
@@ -35,9 +35,9 @@ module "policies" {
       resources = ["*"]
     },
     {
-      sid       = "ECRPull"
+      sid    = "ECRPull"
       effect = "Allow"
-      actions   = [
+      actions = [
         "ecr:BatchCheckLayerAvailability",
         "ecr:GetDownloadUrlForLayer",
         "ecr:BatchGetImage"
@@ -64,30 +64,25 @@ module "policies" {
         "cloudwatch:PutMetricData"
       ]
       resources = ["*"]
-      condition = {
-        test     = "StringEquals"
-        variable = "cloudwatch:namespace"
-        values   = ["ECS/ContainerInsights"]
-      }
     }
   ]
 }
 
 module "role" {
-  source = "../../../../../common/aws/iam/role"
+  source = "../../../../common/aws/iam/role"
 
-  name = "${var.project_name}-ec2-ecs"
+  name        = "${var.project_name}-ec2-ecs"
   description = "EC2 instance role for ECS container instances"
   principals = {
     type        = "Service"
     identifiers = ["ec2.amazonaws.com"]
   }
-  policy_arns = module.policies.arn
+  policy_arns = [module.policy.arn]
 }
 
 module "instance_profile" {
-  source = "../../../../../common/aws/iam/instance_profile"
+  source = "../../../../common/aws/iam/instance_profile"
 
-  name = "${var.project_name}-ec2-ecs"
+  name      = "${var.project_name}-ec2-ecs"
   role_name = module.role.name
 }

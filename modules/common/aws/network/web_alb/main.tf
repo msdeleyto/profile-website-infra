@@ -25,7 +25,7 @@ resource "aws_lb" "this" {
 }
 
 resource "aws_lb_target_group" "this" {
-  for_each = var.services
+  for_each = var.target_groups
 
   name        = "${var.name}-${each.key}-tg"
   port        = each.value.container_port
@@ -59,8 +59,6 @@ resource "aws_lb_target_group" "this" {
 }
 
 resource "aws_lb_listener" "https" {
-  count = 1
-
   load_balancer_arn = aws_lb.this.arn
   port              = 443
   protocol          = "HTTPS"
@@ -83,8 +81,6 @@ resource "aws_lb_listener" "https" {
 }
 
 resource "aws_lb_listener" "http_redirect" {
-  count = 1
-
   load_balancer_arn = aws_lb.this.arn
   port              = 80
   protocol          = "HTTP"
@@ -104,10 +100,10 @@ resource "aws_lb_listener" "http_redirect" {
 }
 
 resource "aws_lb_listener_rule" "this" {
-  for_each = var.services
+  for_each = var.target_groups
 
   # Use HTTPS listener if certificate provided, otherwise HTTP direct listener
-  listener_arn = aws_lb_listener.https[0].arn
+  listener_arn = aws_lb_listener.https.arn
   priority     = each.value.listener_rule_priority
 
   action {

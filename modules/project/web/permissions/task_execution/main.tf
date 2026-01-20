@@ -8,23 +8,23 @@ terraform {
   }
 }
 
-module "policies" {
-  source = "../../../../../common/aws/iam/policy"
+module "policy" {
+  source = "../../../../common/aws/iam/policy"
 
   name        = "${var.project_name}-ecs-task-execution"
   description = "IAM policy for ECS task execution"
   statements = [
     {
-      sid     = ""
-      effect  = "Allow"
+      sid    = ""
+      effect = "Allow"
       actions = [
         "ecr:GetAuthorizationToken"
       ]
       resources = ["*"]
     },
     {
-      sid     = ""
-      effect  = "Allow"
+      sid    = ""
+      effect = "Allow"
       actions = [
         "ecr:BatchCheckLayerAvailability",
         "ecr:GetDownloadUrlForLayer",
@@ -33,8 +33,8 @@ module "policies" {
       resources = var.ecr_repository_arns
     },
     {
-      sid     = ""
-      effect  = "Allow"
+      sid    = ""
+      effect = "Allow"
       actions = [
         "logs:CreateLogGroup",
         "logs:CreateLogStream",
@@ -49,14 +49,14 @@ module "policies" {
 }
 
 module "role" {
-  source = "../../../../../common/aws/iam/role"
+  source = "../../../../common/aws/iam/role"
 
-  name = "${var.project_name}-ecs-task-execution"
+  name        = "${var.project_name}-ecs-task-execution"
   description = "EC2 instance role for ECS container instances"
   principals = {
     type        = "Service"
     identifiers = ["ecs-tasks.amazonaws.com"]
   }
-  policy_arns = module.policies.arn
+  policy_arns = [module.policy.arn]
 }
 

@@ -56,6 +56,23 @@ module "web_network" {
       egress  = []
     }
   }
+  alb_target_type = "instance"
+  domain_name     = "test.msdeleyto.es"
+  alb_target_groups = {
+    web = {
+      container_port         = 80
+      health_check_path      = "/"
+      health_check_matcher   = "200-299"
+      health_check_interval  = 30
+      health_check_timeout   = 5
+      healthy_threshold      = 2
+      unhealthy_threshold    = 3
+      deregistration_delay   = 30
+      listener_rule_priority = 100
+      path_pattern           = "/*"
+      host_header            = "test.msdeleyto.es"
+    }
+  }
 }
 
 module "database_network" {
@@ -73,7 +90,7 @@ module "database_network" {
     sg_id_rules = {
       ingress = [
         {
-          referenced_security_group_id = module.web_subnets.security_group_id
+          referenced_security_group_id = module.web_network.security_group_id
           from_port                    = 5432
           ip_protocol                  = "tcp"
           to_port                      = 5432

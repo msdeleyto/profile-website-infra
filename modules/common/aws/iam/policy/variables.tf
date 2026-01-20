@@ -15,10 +15,5 @@ variable "statements" {
     effect    = string
     actions   = list(string)
     resources = list(string)
-    condition = object({
-      test     = string
-      variable = string 
-      values   = list(string)
-    })
   }))
 }
