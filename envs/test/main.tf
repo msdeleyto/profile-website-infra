@@ -74,5 +74,5 @@ module "database" {
   vpc_id                = module.core.vpc_id
   vpc_cidr              = var.vpc_cidr
   availability_zones    = var.availability_zones
-  web_security_group_id = module.web_network.ecs_security_group_id
+  web_security_group_id = module.web.ecs_security_group_id
 }
