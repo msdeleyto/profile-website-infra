@@ -55,7 +55,22 @@ variable "web_nacl_rules" {
       to_port     = 443
     },
     {
-      rule_number = 100
+      rule_number = 300
+      egress      = false
+      protocol    = "tcp"
+      cidr        = "0.0.0.0/0"
+      from_port   = 1024
+      to_port     = 65535
+    },
+    { rule_number = 100
+      egress      = true
+      protocol    = "tcp"
+      cidr        = "0.0.0.0/0"
+      from_port   = 443
+      to_port     = 443
+    },
+    {
+      rule_number = 200
       egress      = true
       protocol    = "tcp"
       cidr        = "0.0.0.0/0"
