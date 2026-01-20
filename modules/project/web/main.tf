@@ -20,7 +20,6 @@ module "network" {
   nacl_rules         = var.nacl_rules
   alb_target_type    = var.alb_target_type
   domain_name        = var.domain_name
-  alb_target_groups  = var.alb_target_groups
 }
 
 module "iam" {

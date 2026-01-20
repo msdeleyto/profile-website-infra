@@ -29,21 +29,9 @@ variable "certificate_arn" {
   sensitive   = true
 }
 
-variable "target_groups" {
-  description = "Map of service routing configurations for ALB"
-  type = map(object({
-    container_port         = number
-    health_check_path      = string
-    health_check_matcher   = string
-    health_check_interval  = number
-    health_check_timeout   = number
-    healthy_threshold      = number
-    unhealthy_threshold    = number
-    deregistration_delay   = number
-    listener_rule_priority = number
-    path_pattern           = string
-    host_header            = optional(string)
-  }))
+variable "host" {
+  description = "Host used in the listener to redirect to https"
+  type        = string
 }
 
 variable "target_type" {

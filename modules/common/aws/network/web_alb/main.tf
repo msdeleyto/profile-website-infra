@@ -25,10 +25,8 @@ resource "aws_lb" "this" {
 }
 
 resource "aws_lb_target_group" "this" {
-  for_each = var.target_groups
-
-  name        = "${var.name}-${each.key}-tg"
-  port        = each.value.container_port
+  name        = "${var.name}-web-tg"
+  port        = 80
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
   target_type = var.target_type
@@ -36,20 +34,20 @@ resource "aws_lb_target_group" "this" {
   # Health check configuration
   health_check {
     enabled             = true
-    healthy_threshold   = each.value.healthy_threshold
-    unhealthy_threshold = each.value.unhealthy_threshold
-    timeout             = each.value.health_check_timeout
-    interval            = each.value.health_check_interval
-    path                = each.value.health_check_path
-    matcher             = each.value.health_check_matcher
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
+    timeout             = 5
+    interval            = 30
+    path                = "/"
+    matcher             = "200-299"
     protocol            = "HTTP"
   }
 
   # Deregistration delay
-  deregistration_delay = each.value.deregistration_delay
+  deregistration_delay = 30
 
   tags = {
-    Name    = "${var.name}-${each.key}-tg"
+    Name    = "${var.name}-web-tg"
     Service = each.key
   }
 
@@ -100,38 +98,28 @@ resource "aws_lb_listener" "http_redirect" {
 }
 
 resource "aws_lb_listener_rule" "this" {
-  for_each = var.target_groups
-
-  # Use HTTPS listener if certificate provided, otherwise HTTP direct listener
   listener_arn = aws_lb_listener.https.arn
-  priority     = each.value.listener_rule_priority
+  priority     = 100
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.this[each.key].arn
+    target_group_arn = aws_lb_target_group.this.arn
   }
 
-  # Route based on path pattern or host header
-  dynamic "condition" {
-    for_each = each.value.path_pattern != null ? [1] : []
-    content {
-      path_pattern {
-        values = [each.value.path_pattern]
-      }
+  condition {
+    path_pattern {
+      values = "/*"
     }
   }
 
-  dynamic "condition" {
-    for_each = each.value.host_header != null ? [1] : []
-    content {
-      host_header {
-        values = [each.value.host_header]
-      }
+  condition {
+    host_header {
+      values = [var.host]
     }
   }
 
   tags = {
-    Name    = "${var.name}-${each.key}-rule"
-    Service = each.key
+    Name    = "${var.name}-web-rule"
+    Service = var.name
   }
 }

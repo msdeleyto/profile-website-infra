@@ -114,5 +114,5 @@ module "alb" {
   certificate_arn    = module.acm.certificate_arn
   target_type        = var.alb_target_type
   security_group_ids = [module.alb_security_group.id]
-  target_groups      = var.alb_target_groups
+  host               = var.domain_name
 }

@@ -23,6 +23,11 @@ variable "task_role_arn" {
   type        = string
 }
 
+variable "container_name" {
+  description = "ECS service container name"
+  type        = string
+}
+
 variable "service_image" {
   description = "ECS service image"
   type        = string
@@ -46,4 +51,9 @@ variable "aws_region" {
 variable "health_check_command" {
   description = "Healthcheck command"
   type        = string
+}
+
+variable "log_retention_days" {
+  description = "Log retention in days"
+  type        = number
 }

@@ -49,21 +49,6 @@ module "web" {
   ]
   alb_target_type = "instance"
   domain_name     = "test.msdeleyto.es"
-  alb_target_groups = {
-    web = {
-      container_port         = 80
-      health_check_path      = "/"
-      health_check_matcher   = "200-299"
-      health_check_interval  = 30
-      health_check_timeout   = 5
-      healthy_threshold      = 2
-      unhealthy_threshold    = 3
-      deregistration_delay   = 30
-      listener_rule_priority = 100
-      path_pattern           = "/*"
-      host_header            = "test.msdeleyto.es"
-    }
-  }
   ecr_repository_arns = local.ecr_repository_arns
 }
 

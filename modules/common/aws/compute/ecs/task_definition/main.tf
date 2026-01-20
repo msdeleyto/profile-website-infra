@@ -9,8 +9,8 @@ terraform {
 }
 
 resource "aws_cloudwatch_log_group" "this" {
-  name              = "/ecs/${var.name}/${each.key}"
-  retention_in_days = each.value.log_retention_days
+  name              = "/ecs/${var.name}"
+  retention_in_days = var.log_retention_days
 
   tags = {
     Name    = "${var.name}-logs"
@@ -29,7 +29,7 @@ resource "aws_ecs_task_definition" "this" {
 
   container_definitions = jsonencode([
     {
-      name      = each.value.container_name
+      name      = var.container_name
       image     = var.service_image
       essential = true
 
