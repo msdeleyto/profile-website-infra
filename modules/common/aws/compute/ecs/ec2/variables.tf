@@ -6,7 +6,6 @@ variable "name" {
 variable "ami_id" {
   description = "AMI id for the EC2 launch template"
   type        = string
-  default     = ""
 }
 
 variable "instance_type" {

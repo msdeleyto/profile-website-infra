@@ -40,13 +40,23 @@ variable "domain_name" {
   type        = string
 }
 
-variable "alb_target_type" {
-  description = "Target type for ALB target groups"
-  type        = string
-}
-
 variable "ecr_repository_arns" {
   description = "List of ECR repository ARNs that ECS can pull from"
   type        = list(string)
   sensitive   = true
+}
+
+variable "service_image" {
+  description = "ECS service image"
+  type        = string
+}
+
+variable "aws_region" {
+  description = "AWS region for CloudWatch logs configuration"
+  type        = string
+}
+
+variable "instance_type" {
+  description = "EC2 instance type for ECS container instances"
+  type        = string
 }

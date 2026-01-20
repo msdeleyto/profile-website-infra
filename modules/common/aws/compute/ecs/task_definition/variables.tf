@@ -46,11 +46,12 @@ variable "host_port" {
 variable "aws_region" {
   description = "AWS region for CloudWatch logs configuration"
   type        = string
+  sensitive   = true
 }
 
 variable "health_check_command" {
   description = "Healthcheck command"
-  type        = string
+  type        = list(string)
 }
 
 variable "log_retention_days" {
