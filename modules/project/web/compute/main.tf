@@ -46,7 +46,6 @@ module "ecs_service" {
   subnet_ids                = var.subnet_ids
   ecs_cluster_id            = module.ecs_cluster.id
   task_definition_arn       = module.ecs_task_definition.arn
-  health_check_grace_period = 30
   alb_target_group_arn      = var.alb_target_group_arn
   container_name            = "web"
   container_port            = 80

@@ -53,11 +53,6 @@ variable "task_definition_arn" {
   type        = string
 }
 
-variable "health_check_grace_period" {
-  description = "Health check grace period"
-  type        = number
-}
-
 variable "alb_target_group_arn" {
   description = "ALB target group ARN"
   type        = string

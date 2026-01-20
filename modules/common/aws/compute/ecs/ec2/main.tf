@@ -127,7 +127,7 @@ resource "aws_ecs_service" "this" {
     rollback = true
   }
 
-  health_check_grace_period_seconds = var.health_check_grace_period
+  health_check_grace_period_seconds = 30
 
   load_balancer {
     target_group_arn = var.alb_target_group_arn
