@@ -10,7 +10,7 @@ terraform {
 }
 
 module "vpc" {
-  source = "../../../common/aws/network/vpc"
+  source = "../../common/aws/network/vpc"
 
   name = var.project_name
   cidr = var.vpc_cidr

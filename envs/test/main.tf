@@ -1,12 +1,20 @@
+data "aws_caller_identity" "current" {}
+
+locals {
+  ecr_repository_arns = [
+    "arn:aws:ecr:${var.aws_region}:${data.aws_caller_identity.current.account_id}:repository/web/profile"
+  ]
+}
+
 module "vpc" {
-  source = "../../modules/project/network/core"
+  source = "../../modules/project/core"
 
   project_name = var.project_name
   vpc_cidr     = var.vpc_cidr
 }
 
-module "web_subnets" {
-  source = "../../modules/project/network/web"
+module "web_network" {
+  source = "../../modules/project/web/network"
 
   project_name       = var.project_name
   vpc_id             = module.vpc.vpc_id
@@ -50,8 +58,8 @@ module "web_subnets" {
   }
 }
 
-module "database_subnets" {
-  source = "../../modules/project/network/database"
+module "database_network" {
+  source = "../../modules/project/database/network"
 
   project_name       = var.project_name
   vpc_id             = module.vpc.vpc_id
@@ -74,4 +82,11 @@ module "database_subnets" {
       egress = []
     }
   }
+}
+
+module "web_permissions" {
+  source = "../../modules/project/web/permissions"
+
+  project_name        = var.project_name
+  ecr_repository_arns = local.ecr_repository_arns
 }
